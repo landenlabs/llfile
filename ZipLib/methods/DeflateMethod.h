@@ -17,7 +17,7 @@ class DeflateMethod :
       /* VersionNeededToExtract */ 20
     );
 
-    enum class CompressionLevel : int
+    enum /* class */ CompressionLevel  /* : int */
     {
       L1 = 1,
       L2 = 2,
