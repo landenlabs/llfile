@@ -73,7 +73,7 @@ struct LLDirEntry
 
     void *operator new(size_t /* size */, LLDirEntryPool& pool, size_t ourSize)
     {
-        return (void*)pool.Add(0, ourSize);
+        return (void*)pool.Add(nullptr, ourSize);
     }
 
     void operator delete(void*)
@@ -97,9 +97,12 @@ typedef int (*DirCb)(
 class LLDirSort
 {
 public:
-    LLDirSort() : m_ourSize(0), m_count(0), m_pool(),
-        m_pFirst(NULL), m_pLast(NULL),
-        m_onlyAttr(DWORD(-1)), m_values(0)
+    LLDirSort() : m_ourSize(0), m_count(0), m_baseDirLen(0), m_pool(),
+        m_pFirst(nullptr), m_pLast(nullptr),
+        m_onlyAttr(-1),
+        m_fillEntryData(nullptr),
+        m_fillFindData(nullptr),
+        m_values(0)
     {}
 
     ~LLDirSort() { Clear(); }

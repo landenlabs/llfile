@@ -80,9 +80,10 @@ static const char sHelp[] =
 "    LLCmp -rD -l=10  -d=e2 c:\\CSharpe\\* d:\\foo\\CSharpe\\* \n"
 "\n"
 "  !0eOutput controls:!0f\n"
-"   -a                  ; Show ALL match result (default is only differences)\n"
+"   -a                  ; Show ALL match result (default is  diff and skip)\n"
+"   -d                  ; Show only differences (not skips) \n"
 "   -e                  ; Show only equal files\n"
-"   -s                  ; Show skipped files  (default is only differences)\n"
+"   -s                  ; Show only skipped files  (default is only differences)\n"
 "   -s=l or -s=r        ; Show skipped Left or Right files \n"
 "   -v                  ; Verbose, show detail on first difference per file \n"
 "   -V=<count>          ; Verbose, show differences, stop after 'count' per file \n"
@@ -107,6 +108,7 @@ static const char sHelp[] =
 "   -qq                 ; Hide details and only show summary when used with -F \n"
 "   -qp                 ; Hide file compare progress \n"
 "   -Q=n                ; Quit after 'n' lines output\n"
+"   -t                  ; Text compare, ignore white and eol\n"
 "   -1=<output>         ; Redirect output to file \n"
 "   -,                  ; Disable commas in size and numeric output\n"
 "\n"
@@ -201,8 +203,8 @@ static const char* DisplayMD4Hash(const char* filePath)
 LLCmp::LLCmp() :
     m_showDiff(true),
     m_showEqual(false),
-    m_showSkipLeft(false),
-    m_showSkipRight(false),
+    m_showSkipLeft(true),
+    m_showSkipRight(true),
     m_quiet(false),         // no stats, no color
     m_progress(true),
     m_showMD5hash(false),
@@ -294,8 +296,13 @@ int LLCmp::Run(const char* cmdOpts, int argc, const char* pDirs[])
 			case 'l':	// l or l2
 				m_delCmd = (str[1] == '2' ? eLesser2Del : eLesserDel);
 				break;
+            case '\0':
+                m_showEqual = false;
+                m_showDiff = true;
+                m_showSkipLeft = m_showSkipRight = false;
+                break;
 			default:
-				ErrorMsg() << delOptErrMsg << std::endl;
+				ErrorMsg() << delOptErrMsg << " unknown option " << str << std::endl;
 			}
                 
             break;
@@ -715,7 +722,7 @@ LLCmp::CompareResult LLCmp::CompareDataBinary(
             filePos += rlen1;
 
             if (m_progress && compareInfo.fileSize1 > 1024*1024)
-                std::cout << std::fixed << std::setw(6) << std::setprecision(2)
+                std::cerr << std::fixed << std::setw(6) << std::setprecision(2)
                     << (filePos * 100.0) /  compareInfo.fileSize1 << " %\r";
         }
 
@@ -1249,7 +1256,7 @@ public:
     }
     static bool CmpLen(const std::string& a, const std::string& b)
     {   return a.length() > b.length();    }
-    static const char* CompareDirLevels::GetDir(const LLDirEntry* pDirEnt);
+    static const char* GetDir(const LLDirEntry* pDirEnt);
 
     static unsigned s_levels;
     static std::vector<std::string> s_dirs;
@@ -1443,19 +1450,19 @@ void  LLCmp::DoCmp(CmpMatch cmpMatch)
             if (m_progress)
             {
                 // Show file compare progress.
-                std::cout << fileIdx * 100 / m_inFileCnt << "% ";
-                std::cout << " Eq:" << m_equalCount;
+                std::cerr << fileIdx * 100 / m_inFileCnt << "% ";
+                std::cerr << " Eq:" << m_equalCount;
                 if (m_diffCount != 0)
-                    std::cout << ", Ne:" << m_diffCount;
+                    std::cerr << ", Ne:" << m_diffCount;
                 if (m_errorCount != 0)
-                    std::cout << ", Er:" << m_errorCount;
+                    std::cerr << ", Er:" << m_errorCount;
                 if (m_skipCount[0] != 0)
-                    std::cout << ", SL:" << m_skipCount[0];
+                    std::cerr << ", SL:" << m_skipCount[0];
                 if (m_skipCount[1] != 0)
-                    std::cout << ", SR:" << m_skipCount[1];
+                    std::cerr << ", SR:" << m_skipCount[1];
                 if (m_delCount != 0)
-                    std::cout << ", Del:" << m_delCount;
-                std::cout << "\r";
+                    std::cerr << ", Del:" << m_delCount;
+                std::cerr << "  \r";
             }
 
             switch (m_compareDataMode)

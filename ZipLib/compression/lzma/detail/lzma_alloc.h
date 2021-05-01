@@ -7,7 +7,7 @@ namespace detail
     : public ISzAlloc
   {
     public:
-      lzma_alloc()
+      lzma_alloc() noexcept
       {
         this->Alloc = [](void*, size_t size)   { return malloc(size); };
         this->Free  = [](void*, void* address) { free(address); };

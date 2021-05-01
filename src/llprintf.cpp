@@ -406,16 +406,16 @@ print_direc (const char *start, size_t length, char conversion,
             if ( !have_field_width)
             {
                 if ( !have_precision)
-                    printf (p, arg);
+                    LLMsg::Out() << arg; //  printf(p, arg);
                 else
-                    printf (p, precision, arg);
+                    LLMsg::Out() << std::setprecision(precision) << arg; //  printf(p, precision, arg);
             }
             else
             {
                 if ( !have_precision)
-                    printf (p, field_width, arg);
+                    LLMsg::Out() << setw(field_width) << arg; //  printf(p, field_width, arg);
                 else
-                    printf (p, field_width, precision, arg);
+                    LLMsg::Out() << std::setw(field_width) << std::setprecision(precision) << arg; // printf (p, field_width, precision, arg);
             }
         }
         break;
@@ -429,16 +429,17 @@ print_direc (const char *start, size_t length, char conversion,
             if ( !have_field_width)
             {
                 if ( !have_precision)
-                    printf (p, arg);
+                    LLMsg::Out() << std::hex << arg; //  printf(p, arg);
                 else
-                    printf (p, precision, arg);
+                    LLMsg::Out() << std::hex << std::setprecision(precision) << arg; //  printf(p, precision, arg);
             }
             else
             {
                 if ( !have_precision)
-                    printf (p, field_width, arg);
+                    LLMsg::Out() << std::hex << setw(field_width) << arg; //  printf(p, field_width, arg);
                 else
-                    printf (p, field_width, precision, arg);
+                    LLMsg::Out() << std::hex << std::setw(field_width) << std::setprecision(precision) << arg; // printf (p, field_width, precision, arg);
+                ;
             }
         }
         break;
@@ -456,44 +457,47 @@ print_direc (const char *start, size_t length, char conversion,
             if ( !have_field_width)
             {
                 if ( !have_precision)
-                    printf (p, arg);
+                    LLMsg::Out() << std::fixed << arg; //  printf(p, arg);
                 else
-                    printf (p, precision, arg);
+                    LLMsg::Out() << std::fixed << std::setprecision(precision) << arg; //  printf(p, precision, arg);
+
             }
             else
             {
                 if ( !have_precision)
-                    printf (p, field_width, arg);
+                    LLMsg::Out() << std::fixed << setw(field_width) << arg; //  printf(p, field_width, arg);
                 else
-                    printf (p, field_width, precision, arg);
+                    LLMsg::Out() << std::setw(field_width) << std::fixed << std::setprecision(precision) << arg; // printf (p, field_width, precision, arg);
             }
         }
         break;
 
     case 'c':
         if ( !have_field_width)
-            printf (p, *argument);
+            LLMsg::Out() << *argument; //  printf (p, *argument);
         else
-            printf (p, field_width, *argument);
+            LLMsg::Out() << setw(field_width) << *argument; //  printf (p, field_width, *argument);
         break;
 
     case 's':
         if ( !have_field_width)
         {
             if ( !have_precision)
-                printf(p, argument);
+                LLMsg::Out() << argument; //  printf (p, argument);
             else
-                printf(p, precision, argument);
+                LLMsg::Out() << setw(field_width) << argument; //  printf (p, field_width,*argument);
         }
         else
         {
             if ( !have_precision)
-                printf(p, field_width, argument);
+                LLMsg::Out() << std::fixed << setw(field_width) << argument; //  printf(p, field_width, argument);
             else
-                printf(p, field_width, precision, argument);
+                LLMsg::Out() << std::setw(field_width) << std::fixed << std::setprecision(precision) << argument; // printf (p, field_width, argument, arg);
         }
         break;
     }
+
+    // fflush(stdout);
 
     delete (p);
 }

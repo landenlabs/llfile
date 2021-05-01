@@ -69,7 +69,7 @@ class BaseMsg
 public:
     enum LogType { eInfo, eDebug, eError };
 
-    BaseMsg(LogType logType) : m_logType(logType)
+    BaseMsg(BaseMsg::LogType logType) : m_logType(logType)
     {}
 
     ~BaseMsg();

@@ -35,6 +35,7 @@
 #include <windows.h>
 
 #include "llbase.h"
+#include <set>
 
 // Forward declaration
 struct DirectoryScan;
@@ -95,13 +96,13 @@ public:
     int DirFile(const char* fullFile, int depth=0);
 
 
-    void ShowStream(bool b)
+    void ShowStream(bool b) noexcept 
     { m_showStream = b; };
 
-    bool Quiet() const
+    bool Quiet() const noexcept
     { return m_quiet; }
 
-    DWORD WatchBits() const
+    DWORD WatchBits() const noexcept
     { return m_WatchBits; }
 
     static LLDirConfig    sConfig;
@@ -134,6 +135,7 @@ protected:
 
     unsigned    m_showPath;         // show full file path
 
+    std::set<char>  m_chattr;           // change attributes, H/h=FILE_ATTRIBUTE_HIDDEN
     DWORD       m_chmod;            // change permission, 0=noChange, _S_IWRITE  or _S_IREAD
     DWORD       m_WatchBits;        // FILE_ACTION_ADDED, FILE_ACTION_REMOVED, FILE_ACTION_MODIFIED
 

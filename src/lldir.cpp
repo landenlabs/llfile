@@ -85,9 +85,11 @@ static const char sHelp[] =
 "    -R c:\\tmp\\*.obj    ; List all .obj files in and under c:\\tmp directory\n"
 "   c:\\t*\\src\\*         ; List all files off directory starting with t\n"
 "                       ;  and having subdirectory src\n"
+"     -rpP=\\\\foo\\\\      ; List all files in path which contains subdirectory foo\n"
 "\n"
 "   -a                  ; Show attributes  (-aw  show as words, -as show security)\n"
 "   -cw or -cr          ; Change permission to writeable or readonly\n"
+"   -cH or -ch          ; Set or clear hidden\n"
 "   -ct                 ; Change time (modify)\n"
 
 "   -h or -H            ; Hide heading\n"
@@ -868,6 +870,8 @@ int LLDir::Run(const char* cmdOpts, int argc, const char* pDirs[])
             break;
 
         case 'c':   // Chmod - change permission, -cr, -cw, -ct
+            // 'h'  FILE_ATTRIBUTE_HIDDEN
+            //    setFileAttribute
             if (cmdOpts[1] == 'r')
             {
                 m_chmod = _S_IREAD;
@@ -899,6 +903,10 @@ int LLDir::Run(const char* cmdOpts, int argc, const char* pDirs[])
                     LLMsg::Out() << "SetTime to Local=";
                     LLSup::Format(LLMsg::Out(), m_setUtcTime, true) << std::endl;
                 }
+            }
+            else {
+                m_chattr.insert(cmdOpts[1]);
+                cmdOpts++;
             }
             break;
         case 'C':   // Color options -C=r.red -C=d.blue -C=d.red+blue
@@ -1709,6 +1717,7 @@ int LLDir::ProcessEntry(
                 perror(m_srcPath);
             }
         }
+        LLSup::ChangeAttributes(m_srcPath, m_chattr);
 
         std::string errMsg;
         if (m_setTime)

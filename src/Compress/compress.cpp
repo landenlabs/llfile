@@ -8,6 +8,7 @@
 
 #include <windows.h>
 #include <iostream>
+#pragma warning (disable:4464)
 
 #include "..\dirscan.h"
 #include "..\llbase.h"

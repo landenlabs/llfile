@@ -65,7 +65,7 @@ class LLReplace : public LLBase
 {
 public:
     LLReplace();
-    virtual ~LLReplace() {}
+    ~LLReplace() {}
 
     static int StaticRun(const char* cmdOpts, int argc, const char* pDirs[]);
     int Run(const char* cmdOpts, int argc, const char* pDirs[]);

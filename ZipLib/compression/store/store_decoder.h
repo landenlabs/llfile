@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning (disable:4464 26436)
 #include "../compression_interface.h"
 
 #include "store_decoder_properties.h"
@@ -16,7 +17,7 @@ class basic_store_decoder
     typedef typename compression_interface_basic<ELEM_TYPE, TRAITS_TYPE>::istream_type istream_type;
     typedef typename compression_interface_basic<ELEM_TYPE, TRAITS_TYPE>::ostream_type ostream_type;
 
-    basic_store_decoder()
+    basic_store_decoder() noexcept
       : _stream(nullptr)
       , _bufferCapacity(0)
       , _outputBufferSize(0)

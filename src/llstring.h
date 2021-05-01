@@ -97,7 +97,7 @@ public:
         for (size_t i=0; i < m_buckets.size(); ++i)
         {
             delete m_buckets[i];
-            m_buckets[i] = NULL;
+            m_buckets[i] = nullptr;
         }
 
         m_buckets.clear();

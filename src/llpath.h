@@ -44,51 +44,55 @@ public:
     static std::string Join(const std::string& basePath, const char* filename)
     {
         lstring joinWith = ((basePath.length() != 0 && basePath.back() == sDirChr())
-           || (filename != NULL && filename[0] == sDirChr())) ? "" : sDirSlash.c_str();
+           || (filename != nullptr && filename[0] == sDirChr())) ? "" : sDirSlash.c_str();
         std::string fullPath(basePath + joinWith + filename);
         return fullPath;
     }
 
     // Return true if path points to a file.
-    static bool IsFile(const char* path)
+    static bool IsFile(const char* path) noexcept
     {
-        DWORD attr = GetFileAttributes(path);
+        const DWORD attr = GetFileAttributes(path);
         return (attr != INVALID_FILE_ATTRIBUTES &&  (attr & FILE_ATTRIBUTE_DIRECTORY) == 0);
     }
 
     // Return true if path points to a directory.
-    static bool IsDirectory(const char* path)
+    static bool IsDirectory(const char* path) noexcept
     {
-        DWORD attr = GetFileAttributes(path);
+        const DWORD attr = GetFileAttributes(path);
         return (attr != INVALID_FILE_ATTRIBUTES &&  (attr & FILE_ATTRIBUTE_DIRECTORY) != 0);
     }
 
     // Return file extension or NULL
-    static const char* GetExtension(const char* path)
+    static const char* GetExtension(const char* path) noexcept
     {
         const char* pExtn = strrchr(path, '.');
-        return (pExtn == NULL) ? pExtn : pExtn+1;
+        return (pExtn == nullptr) ? pExtn : pExtn+1;
     }
 
     // Return file name+extension or NULL
-    static const char* GetNameAndExt(const char* path)
+    static const char* GetNameAndExt(const char* path) noexcept
     {
         const char* pDir = strrchr(path, sDirChr());
-        return (pDir == NULL) ? pDir : pDir+1;
+        return (pDir == nullptr) ? pDir : pDir+1;
     }
 
     // Return true if path points a file or directory
-    static bool PathExists(const char* path)
+    static bool PathExists(const char* path) noexcept
     {
-        DWORD attr = GetFileAttributes(path);
+        const DWORD attr = GetFileAttributes(path);
         return (attr != INVALID_FILE_ATTRIBUTES);
     }
 
     // Return true if attributes are not ReadOnly, not System and not Hidden.
-    static bool IsWriteable(DWORD attr)
+    static bool IsWriteable(DWORD attr) noexcept
     {
         const DWORD readOnly = (FILE_ATTRIBUTE_READONLY|FILE_ATTRIBUTE_DEVICE|FILE_ATTRIBUTE_HIDDEN|FILE_ATTRIBUTE_SYSTEM);
         return (attr == INVALID_FILE_ATTRIBUTES || (attr & readOnly) == 0);
+    }
+    static bool IsHidden(DWORD attr) noexcept
+    {
+        return (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_HIDDEN) == 0);
     }
 
     // Return position of last '/' or '\'
@@ -107,7 +111,7 @@ public:
     // Remove trailing slash
     static std::string RemoveLastSlash(std::string& path)
     {
-        uint len = path.length();
+        const uint len = path.length();
         if (len > 0 && path[len-1] == sDirChr())
             path[len-1] = '\0';
         return path;

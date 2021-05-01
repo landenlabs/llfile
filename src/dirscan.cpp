@@ -221,7 +221,14 @@ bool WildCompare(
 //-----------------------------------------------------------------------------
 bool PatternMatch(const std::string& pattern, const char* str)
 {
+    if (pattern.length() > 1 && pattern[0] == '!')
+    {
+        return !WildCompare(pattern.c_str(), 1, str, 0);
+    } 
+    else
+    {
     return WildCompare(pattern.c_str(), 0, str, 0);
+    }
 }
 
 //-----------------------------------------------------------------------------

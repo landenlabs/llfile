@@ -1,5 +1,7 @@
 #pragma once
 #include "ICompressionMethod.h"
+
+#pragma warning (disable:4464)
 #include "../compression/store/store_encoder.h"
 #include "../compression/store/store_decoder.h"
 

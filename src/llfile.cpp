@@ -201,7 +201,7 @@ static CmdAlias sCmdAlias[] =
     {"i",       eInstall},
 	{"llunstall",eUninstall},
     {"u",       eUninstall},
-    {NULL,      eNone},
+    {nullptr,      eNone},
 };
 
 // ---------------------------------------------------------------------------
@@ -216,7 +216,7 @@ Cmd GetDefaultCommand(const char* argv0)
     strcpy_s(prognm, ARRAYSIZE(prognm), argv0);
 
     int nmLen = (int)strlen(prognm);
-    while (nmLen > 0 && strchr("\\/", prognm[nmLen-1]) == NULL)
+    while (nmLen > 0 && strchr("\\/", prognm[nmLen-1]) == nullptr)
     {
         nmLen--;
         prognm[nmLen] = ToLower(prognm[nmLen]);
@@ -224,7 +224,7 @@ Cmd GetDefaultCommand(const char* argv0)
 
     char* pPrognm = prognm + nmLen;
 
-    for (int i=0; sCmdAlias[i].name != NULL; i++)
+    for (int i=0; sCmdAlias[i].name != nullptr; i++)
     {
         if (_strnicmp(pPrognm, sCmdAlias[i].name, strlen(sCmdAlias[i].name)) == 0)
         {
@@ -246,9 +246,9 @@ int main(int argc, const char* argv[])
     Cmd cmd = GetDefaultCommand(argv[0]);
 
     const int sMaxCmdOpts = 512;
-    char cmdOpts[sMaxCmdOpts];
+    char cmdOpts[sMaxCmdOpts] = {0};
     char* pCmdOpts = cmdOpts;
-    char* pCmdEnd  = pCmdOpts + sMaxCmdOpts- 1;
+    const char* pCmdEnd  = pCmdOpts + sMaxCmdOpts- 1;
     ClearMemory(cmdOpts, sizeof(cmdOpts));
 
 #ifdef _DEBUG
@@ -270,7 +270,7 @@ int main(int argc, const char* argv[])
 
     try
     {
-        short argn;
+        int argn;
         for (argn = 1; argn < argc; argn++)
         {
             if (*argv[argn] == '-' || *argv[argn] == '+')
@@ -286,7 +286,7 @@ int main(int argc, const char* argv[])
                             // TODO - Show sHelp for llfile before command list.
                             Colorize(std::cout, sHelp);
                             Colorize(std::cout, "    LLFile !02-x<c>!0f\n\n  !0eWhere commands can be:!0f\n");
-                            for (int i=0; sCmdAlias[i].name != NULL; i++)
+                            for (int i=0; sCmdAlias[i].name != nullptr; i++)
                                 if (sCmdAlias[i].name[1] == '\0')
                                     std::cout << "     " << GreenFg << "-x" << sCmdAlias[i].name
                                         << "      "
@@ -298,7 +298,7 @@ int main(int argc, const char* argv[])
                         break;
 
                     case 'x':   // -x<c>
-                        if (argn == 1 && argvPtr[-1] == '-' && argvPtr[1] != '\0')
+                        if (argn == 1 && argvPtr[-1] == '-' && argvPtr[1] != '\0' && argvPtr == argv[argn]+1)
                         {
                             argvPtr++;
                             char abbreviatedCmd[2];
@@ -328,7 +328,7 @@ int main(int argc, const char* argv[])
         }
 
         int passArgc = argc - argn;
-        const char** passArgv  = (passArgc == 0) ? NULL : argv + argn;
+        const char** passArgv  = (passArgc == 0) ? nullptr : argv + argn;
 
         switch (cmd)
         {
@@ -367,7 +367,7 @@ int main(int argc, const char* argv[])
         case eInstall:
             {
                 char dir[_MAX_DIR];
-                _splitpath(argv[0], NULL, dir, NULL, NULL);
+                _splitpath(argv[0], nullptr, dir, nullptr, nullptr);
                 SetCurrentDirectory(dir);
 
                 const char* installArgs[2];
@@ -375,7 +375,7 @@ int main(int argc, const char* argv[])
                 char dstAlias[20];
 
                 strcpy(srcFile, argv[0]);
-                if (strchr(srcFile, '.') == NULL)
+                if (strchr(srcFile, '.') == nullptr)
                     strcat(srcFile, ".exe");
 
                 installArgs[0] = srcFile;
@@ -390,7 +390,7 @@ int main(int argc, const char* argv[])
                     strcat(strcpy(dstAlias, pCmdAlias->name), ".exe");
                     // Hardlink llfile.exe to <alias>.exe
 
-                    LLMsg::Out() << "llfile -Xm -fOL " <<  installArgs[0] << " " <<  installArgs[1] << std::endl;
+                    LLMsg::Out() << "llfile -xm -fOL " <<  installArgs[0] << " " <<  installArgs[1] << std::endl;
                     const char sLinkForceOveride[] = "L" sEOCstr "f"  sEOCstr  "O" sEOCstr;
                     exitStatus |= LLMove::StaticRun(sLinkForceOveride, 2, installArgs);
                 }
@@ -399,7 +399,7 @@ int main(int argc, const char* argv[])
 		case eUninstall:
             {
                 char dir[_MAX_DIR];
-                _splitpath(argv[0], NULL, dir, NULL, NULL);
+                _splitpath(argv[0], nullptr, dir, nullptr, nullptr);
                 SetCurrentDirectory(dir);
 
                 const char* installArgs[2];
@@ -407,11 +407,13 @@ int main(int argc, const char* argv[])
                 char dstAlias[20];
 
                 strcpy(srcFile, argv[0]);
-                if (strchr(srcFile, '.') == NULL)
+                if (strchr(srcFile, '.') == nullptr)
                     strcat(srcFile, ".exe");
 
                 installArgs[0] = dstAlias;
                 exitStatus = 0;
+
+                std::cerr << "Redirect output into a batch file and run to uninstall LLFile suite\n";
 
                 for (CmdAlias* pCmdAlias = sCmdAlias;
                     pCmdAlias->cmd != eInstall &&
@@ -421,9 +423,12 @@ int main(int argc, const char* argv[])
                     strcat(strcpy(dstAlias, pCmdAlias->name), ".exe");
                     // Hardlink llfile.exe to <alias>.exe
 
-                    LLMsg::Out() << "llfile -Xr -f " << installArgs[0] << std::endl;
-                    const char sDelOptions[] = "f" sEOCstr;
-                    exitStatus |= LLDel::StaticRun(sDelOptions, 1, installArgs);
+                    // LLMsg::Out() << "llfile -xr -f " << installArgs[0] << std::endl;
+                    // const char sDelOptions[] = "f" sEOCstr;
+                    // exitStatus |= LLDel::StaticRun(sDelOptions, 1, installArgs);
+
+                    // Can't break links while app is running, instead output commands to be run in batch file.
+                    LLMsg::Out() << "del " << installArgs[0] << std::endl;
                 }
                 break;
             }

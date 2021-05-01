@@ -131,7 +131,7 @@ bool LLBase::ParseBaseCmds(const char*& cmdOpts)
         cmdOpts = LLSup::ParseNum(cmdOpts+1, m_limitOut, quitOptErrMsg);
         break;
     case 'r':   // Directory scan options
-        m_dirScan.m_recurse = !m_dirScan.m_recurse;
+        m_dirScan.m_recurse = true;
         break;
     case 'T':   // -T[acm]<op><value>   ; Limit by Time a=access, c=creation, m=modified
                 // -T=[acm]<op><value>  ; Limit by Time a=access, c=creation, m=modified
@@ -202,6 +202,10 @@ bool LLBase::FilterDir(
         m_countInDir++;
 		
 		if (!LLSup::PatternListMatches(m_includeDirList, pFileData->cFileName, true))
+			return false;
+
+		if (m_grepSrcPathPat.flags() != 0 &&
+			!std::regex_search(m_srcPath.begin(), m_srcPath.end(), m_grepSrcPathPat))
 			return false;
     }
     else

@@ -2,6 +2,7 @@
 #include <streambuf>
 #include <cstdint>
 
+#pragma warning (disable:4464)
 #include "../substream.h"
 #include "../../extlibs/zlib/zlib.h"
 

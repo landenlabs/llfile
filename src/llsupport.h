@@ -29,6 +29,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
+#pragma warning (disable:4100 4189 4267 4365 4514 4571 4625 4626 4640 4668 4710 4820 498 26493 26462 26496 26814 26482 26485 26481 4464)
 
 #define NOCOMM
 
@@ -36,6 +37,7 @@
 #include <fstream>
 #include <vector>
 #include <list>
+#include <set>
 #include <string>
 #include <Windows.h>
 
@@ -57,7 +59,7 @@
 #define QUOTE(x) Q(x)
 
  // C++ version _CPPLIB_VER 
-#define LLVERSION "v16.1s" LLBLDBITS LLCHAR " C++_" QUOTE(_CPPLIB_VER)
+#define LLVERSION "v17.06s" LLBLDBITS LLCHAR " C++_" QUOTE(_CPPLIB_VER) " " __DATE__
 
 
 #include "ll_stdhdr.h"
@@ -188,6 +190,7 @@ std::ostream& Format(std::ostream& out, const FILETIME& utcFT, bool localTz=true
 
 // Get Fieinformation
 bool GetFileInfo(const char* path, BY_HANDLE_FILE_INFORMATION& fileInfo);
+void ChangeAttributes(const lstring& srcPath, const std::set<char>& chattr);
 
 // Set Destination modify time to Source modify time.
 bool SetFileModTime(const char* dstPath, const char* srcPath);

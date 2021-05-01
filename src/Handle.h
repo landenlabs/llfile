@@ -70,12 +70,12 @@ public:
     ~Handle()
     { Close(); }
 
-    bool IsValid() const
+    bool IsValid() const noexcept
     { return (m_handle != INVALID_HANDLE_VALUE); }
-     bool NotValid() const
+     bool NotValid() const noexcept
     { return  (m_handle == INVALID_HANDLE_VALUE); }
 
-    operator HANDLE() const
+    operator HANDLE() const noexcept
     { return m_handle; }
 
     void Close()

@@ -53,7 +53,7 @@
 namespace LLSup
 {
 static char sVersion[]= "LLFile - By:DLang "  LLVERSION  " " __DATE__;
-
+static unsigned sNum = 0;
 
 // ---------------------------------------------------------------------------
 bool GetCmdField(const char*& cmdOpts, char* cmdOutBuffer, size_t maxOutBuffer)
@@ -280,6 +280,9 @@ bool ReplaceDstWithSrc(
                 else
                     pExtn++;        // skip over dot.
                 int remLen = 2;
+				unsigned digits = 0;
+				char numBuf[10];
+				// const char* pNum = numBuf;
 
                 bool didPartReplace = true;
                 switch (dstFile[dstIdx+1])
@@ -318,6 +321,15 @@ bool ReplaceDstWithSrc(
                     _strlwr_s(pModName, strlen(pModName)+1);
                     *pModName = ToUpper(*pName);
                     break;
+				case '#':	// ##
+					digits = 2;
+					while (dstIdx + remLen < dstFile.length() && dstFile[dstIdx + remLen] == '#') {
+						remLen++;
+						digits++;
+					}
+					sprintf(numBuf, "%0*u", digits, sNum++);
+					ReplaceString(dstFile, dstIdx, remLen, numBuf, digits);
+					break;
                 default:
                     didPartReplace = false;
                     break;
@@ -623,6 +635,25 @@ bool GetFileInfo(const char* path, BY_HANDLE_FILE_INFORMATION& fileInfo)
     }
 
     return okay;
+}
+
+//-----------------------------------------------------------------------------
+void ChangeAttributes(const lstring& srcPath, const std::set<char>& chattr) {
+    if (chattr.empty())
+        return;
+
+    DWORD attributes = GetFileAttributes(srcPath);
+    for(char attrCmd : chattr) {
+        switch(attrCmd) {
+        case 'H':   // Set hidden
+            attributes += FILE_ATTRIBUTE_HIDDEN;
+            break;
+        case 'h':   // Clear hidden
+            attributes &= ~FILE_ATTRIBUTE_HIDDEN;
+            break;
+        }
+        SetFileAttributes(srcPath, attributes);
+   }
 }
 
 #if 0
@@ -1352,7 +1383,7 @@ const char* ParseOutput(const char* cmdOpts)
     cmdOpts = ParseString(cmdOpts, outFile, "Missing redirected output filename, -2=<filename>");
     if (outFile.length() != 0)
     {
-        out.open(outFile.c_str(), ios::app);
+        out.open(outFile.c_str(), ios::app, _SH_DENYNO); //  filebuf::sh_read | filebuf::sh_writ);
         if (out)
             LLMsg::RedirectOutput(out);
         else
@@ -1366,14 +1397,18 @@ const char* ParseOutput(const char* cmdOpts)
 const char* ParseOutput(const char* cmdOpts, bool tee)
 {
     static std::ofstream out;
-
     std::string outFile;
     cmdOpts = ParseString(cmdOpts, outFile, "Missing redirected output filename, -1=<filename>");
     if (outFile.length() != 0)
     {
-        out.open(outFile.c_str(), ios::app);
-        if (out)
+        out.open(outFile.c_str(), ios::app, _SH_DENYNO);
+        if (out) {
             LLMsg::RedirectOutput(out, tee);
+ 
+            fflush(stdout);
+            FILE* fout = _fsopen(outFile.c_str(), "a", _SH_DENYNO);
+            int err = _dup2(fileno(fout), 1); //  STDOUT_FILENO);
+        } 
         else
             perror(outFile.c_str());
     }

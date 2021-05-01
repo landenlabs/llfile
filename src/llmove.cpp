@@ -98,6 +98,7 @@ static const char sHelp[] =
 "         b = base name\n"
 "         e = extension\n"
 "         n = base.ext \n"
+"         # = counter, ##=2digits, ###=3digits, etc\n"
 "         l, u, c = lower, upper, captialize name for later use\n"
 "\n"
 "  !0eExample:!0f\n"
@@ -117,7 +118,7 @@ static const char sHelp[] =
 "     ; remove underscores from files\n"
 "      c:\\*_*_*.dat   d:\\*1*2*3.dat\n"
 "     ; Read files from stdin \n"
-"     ld -N | grep Foo | lm -i=- .\\backup\\#n  \n"
+"     ld -N | grep Foo | lm -I=- .\\backup\\#b_####_#e  \n"
 "\n"
 "\n";
 

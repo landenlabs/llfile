@@ -55,6 +55,7 @@ static const char sHelp[] =
 "   -n                  ; No copy, just echo command\n"
 "   -o                  ; Only copy if destination is older than source (modify time)\n"
 "   -O                  ; Okay to over write existing destination regardless of time\n"
+"                       ;  Default is no overwrite \n"
 "   -p                  ; Prompt before copy\n"
 "   -pp                 ; Prevent prompt on Override or readonly, just skip file \n"
 "   -P=<srcPathPat>     ; Optional regular expression pattern on source files\n"
@@ -498,7 +499,9 @@ int LLCopy::ProcessEntry(
         if (m_exec)
         {
             if (dstExists && !LLPath::IsWriteable(dstAttributes))
-                SetFileAttributes(m_dstPath, dstAttributes & ~FILE_ATTRIBUTE_READONLY);
+                SetFileAttributes(m_dstPath, FILE_ATTRIBUTE_NORMAL); //  dstAttributes & ~FILE_ATTRIBUTE_READONLY);
+            // if (dstExists && LLPath::IsHidden(dstAttributes))
+            //     SetFileAttributes(m_dstPath, dstAttributes & ~FILE_ATTRIBUTE_HIDDEN);
 
             //
             // CopyFileEx() to monitor progress

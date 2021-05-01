@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning (disable:4464 26436)
 #include "../compression_interface.h"
 
 #include <algorithm>

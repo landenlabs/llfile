@@ -87,7 +87,8 @@ public:
         m_countInFile(0),           // file scan count
         m_countInReadOnly(0),
         m_onlySize(0),
-        m_onlySizeOp(LLSup::eOpNone),
+        m_onlySizeOp(LLSup::SizeOp::eOpNone),
+        m_testTimeFields(LLSup::TimeFields::eTestNoTime),
         m_timeOp(LLSup::eOpNone),
         m_separators("/\\"),        // characters to split path on, used by #
         m_screenWidth(80),          // used for wide output
@@ -131,7 +132,7 @@ public:
     { return m_startTick; }
 
     // Parse base commands, return false is unknown command.
-    bool LLBase::ParseBaseCmds(const char*& cmdOpts);
+    bool ParseBaseCmds(const char*& cmdOpts);
 
     virtual int ProcessEntry(const char* pDir, const WIN32_FIND_DATA* pFileData, int depth) = 0;
 
@@ -142,7 +143,7 @@ public:
         int depth)      // 0...n is directory depth, -n end-of nth diretory
     {
         LLBase* pBase = (LLBase*)cbData;
-        assert(pBase != NULL);
+        assert(pBase != nullptr);
         return pBase->ProcessEntry(pDir, pFileData, depth);
     }
 

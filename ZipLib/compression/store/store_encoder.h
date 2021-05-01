@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning (disable:4464)
 #include "../compression_interface.h"
 
 #include "store_encoder_properties.h"

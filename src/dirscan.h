@@ -106,5 +106,5 @@ public:
     static std::string GetFullPath(const char* path);
 
     // Return FileId of exiting file, else -1.
-    static LONGLONG DirectoryScan::GetFileId(const char* srcFile);
+    static LONGLONG GetFileId(const char* srcFile);
 };

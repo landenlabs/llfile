@@ -64,10 +64,10 @@ class IgnoreChar
 public:
 	bool m_charSet[256];
 
-	IgnoreChar(bool ignoreSpace=false, bool ignoreEOL=false)
+	IgnoreChar(bool ignoreSpace=true, bool ignoreEOL=true)
 	{ Init(ignoreSpace, ignoreEOL); }
 
-	void Init(bool ignoreSpace, bool ignoreEOL)
+	void Init(bool ignoreSpace, bool ignoreEOL) noexcept
 	{
 		memset(m_charSet, false, sizeof(m_charSet));
 		if (ignoreSpace)
@@ -77,7 +77,7 @@ public:
 	}
 
 	// Return true if character should be ignored.
-	bool Is(char c) const
+	bool Is(char c) const noexcept
 	{  return m_charSet[c]; }
 };
 
