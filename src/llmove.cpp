@@ -41,7 +41,7 @@
 #include "llmove.h"
 
 // Error codes in  WinError.h
-static const char* sLastMsg = nullptr;
+static std::string sLastMsg;
 
 // ---------------------------------------------------------------------------
 
@@ -99,24 +99,32 @@ static const char sHelp[] =
 "         e = extension\n"
 "         n = base.ext \n"
 "         # = counter, ##=2digits, ###=3digits, etc\n"
-"         l, u, c = lower, upper, captialize name for later use\n"
+"         l, u, c = lower, upper, capitalize name for later use\n"
 "\n"
 "  !0eExample:!0f\n"
-"      *      e:\\tmp\\            \n"
-"      *.obj  e:\\tmp\\            \n"
-"      -R c:\\tmp\\*.obj d:\\tmp\\*.obj  e:\\tmp\\  \n"
-"      c:\\t*\\src\\*  e:\\tmp\\    \n"
+"      lm  *      e:\\tmp\\ \n"
+"      lm  *.obj  e:\\tmp\\  \n"
+"      lm  -R c:\\tmp\\*.obj d:\\tmp\\*.obj  e:\\tmp\\  \n"
+"      lm  c:\\t*\\src\\*  e:\\tmp\\ \n"
 "\n"
 "     ; use # to select subdirectories and force name (#n) to lowercase (#l)\n"
 "     ; when any # appear in line, use #n, #b, #e to specify target filename\n"
-"      c:\\foo\\bar\\*\\*.DAT  d:\\far\\#-1\\#l#n \n"
-"      c:\\foo\\bar\\*.dat   d:\\far\\#b.tmp   ; change extension .dat to .tmp\n"
+"      lm  c:\\foo\\bar\\*\\*.DAT  d:\\far\\#-1\\#l#n \n"
+"      lm  c:\\foo\\bar\\*.dat   d:\\far\\#b.tmp   ; change extension .dat to .tmp\n"
 "\n"
-"     ; Move directories quickly \n"
-"      -D  c:\\oldStuff\\*  d:\\newStuff\\* \n"
+"     ; Move directories quickly (on same drive) \n"
+"      lm  -D  c:\\oldStuff\\*  d:\\newStuff\\* \n"
+"\n"
+"      ; Move multiple dirs: data1, data2, etc and contents to new location\n"
+"      ; Note the leading .\\ to make copy directory relative path, used in #1 \n"
+"      ; Use -n to see what will happen without files changing \n"
+"      lm  -r .\\data*\\* f:\\test\\#1\\* \n"
+"\n    ; Without the .\\ the #1 will be the full path insert in destination. \n"
+"      lm  -r  data*\\* f:\\test\\#1\\* \n"
 "\n"
 "     ; remove underscores from files\n"
-"      c:\\*_*_*.dat   d:\\*1*2*3.dat\n"
+"     lm  c:\\*_*_*.dat   d:\\*1*2*3.dat\n"
+"\n"
 "     ; Read files from stdin \n"
 "     ld -N | grep Foo | lm -I=- .\\backup\\#b_####_#e  \n"
 "\n"
@@ -175,8 +183,8 @@ int LLMove::Run(const char* cmdOpts, int argc, const char* pDirs[])
             else if (cmdOpts[1] == 'w')
                 m_chmod = _S_IWRITE;
             break;
-        case 'b':   // delay until boot
-            m_moveFlags |= MOVEFILE_DELAY_UNTIL_REBOOT;
+        case 'b':   // delay until boot  (cannot be used with MOVEFILE_COPY_ALLOWED)
+            m_moveFlags = MOVEFILE_DELAY_UNTIL_REBOOT;
             break;
         case 'f':
             m_force = true;
@@ -248,9 +256,14 @@ int LLMove::Run(const char* cmdOpts, int argc, const char* pDirs[])
             << std::setprecision(2)
             << std::fixed << ((m_totalBytes / double(MB)) / (milliSeconds / 1000.0))
             << "(MB/sec)\n";
+    } else if (m_countOutFiles == 0) {
+        LLMsg::Out() << "No items moved\n";
+    }
+    if (m_countError != 0) {
+        LLMsg::Out() << "Errors: " << m_countError << std::endl;
     }
 
-    if (!m_verbose && sLastMsg != nullptr) {
+    if (!m_verbose && !sLastMsg.empty()) {
         std::cerr << "Move warning - " <<  sLastMsg << std::endl;
     }
 
@@ -260,7 +273,12 @@ int LLMove::Run(const char* cmdOpts, int argc, const char* pDirs[])
 // ---------------------------------------------------------------------------
 static int ignore(bool verbose, const char* msg, const lstring& path)
 {
-    sLastMsg = msg;
+    if (sLastMsg.empty())
+        sLastMsg = msg;
+    else if (sLastMsg.find(msg) == std::string::npos) {
+        sLastMsg += "\n";
+        sLastMsg += msg;
+    }
     if (verbose) std::cerr << msg << path << std::endl;
     return sIgnore;
 }
@@ -296,10 +314,28 @@ int LLMove::ProcessEntry(
     //   If pFileData is not a directory then m_dstPath only contains pDstDir part.
     MakeDstPathEx(m_toDir, pFileData, m_pPattern, createDir);
 
-
     BY_HANDLE_FILE_INFORMATION dstFileInfo;
     bool dstExists = LLSup::GetFileInfo(m_dstPath, dstFileInfo);
     DWORD dstAttributes = dstFileInfo.dwFileAttributes;
+
+    if (m_isDir && !m_dirScan.m_recurse) {
+        // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexa
+        // 
+        // When moving a file, the destination can be on a different file system or volume. 
+        // If the destination is on another drive, you must set the MOVEFILE_COPY_ALLOWED flag in dwFlags.
+        //
+        // When moving a directory, the destination must be on the same drive.
+
+        BY_HANDLE_FILE_INFORMATION srcFileInfo;
+        bool srcExists = LLSup::GetFileInfo(m_srcPath, srcFileInfo);
+        if (srcFileInfo.dwVolumeSerialNumber != dstFileInfo.dwVolumeSerialNumber) {
+            SetColor(FOREGROUND_RED); // TODO - add error color to LLMove::sConfig.m_colorError
+            ErrorMsg() << "Directories cannot be moved across file systems. Use copy instead\n";
+            SetColor(LLMove::sConfig.m_colorNormal);
+            ErrorMsg() << "\t" << m_dstPath << std::endl;
+            return sError;
+        }
+    }
 
     // Get Destination age relative to source file
     //  > 0 newer
@@ -381,7 +417,7 @@ int LLMove::ProcessEntry(
                 SetFileAttributes(m_dstPath, dstAttributes & ~FILE_ATTRIBUTE_READONLY);
 
 
-            const int sMaxRetry = 2;
+            const int sMaxRetry = 2;  // TODO - retry does nothing in this code block
             for (int retry = 0; retry < sMaxRetry; retry++)
             {
                 //
@@ -402,6 +438,10 @@ int LLMove::ProcessEntry(
                         // Create all but last, which is the file.
                         LLSup::CreateDirectories(m_dstPath, 1, true);
                         continue;
+                    }
+
+                    if (error == ERROR_ACCESS_DENIED && retry == 0) {
+
                     }
 
                     if (error)

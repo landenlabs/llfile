@@ -1769,58 +1769,6 @@ int LLDir::ProcessEntry(
             }
             LLMsg::Out() << std::setw(LLDir::sConfig.m_fzWidth) << m_fileSize << LLDir::sConfig.m_dirFieldSep;
         }
-        if (m_showSecurity)
-        {
-            // http://www.ionicwind.com/forums/index.php?topic=3526.5;wap2
-            // Also look at GetFileSecurity(), GetNamedSecurityInfo()
-
-            Handle fileHnd =
-                CreateFile(m_srcPath, MAXIMUM_ALLOWED, 7, 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
-                // CreateFile(m_srcPath, FILE_READ_ATTRIBUTES, 7, 0, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, 0);
-            if (fileHnd.IsValid())
-            {
-                PACL dacl = NULL;
-                PSECURITY_DESCRIPTOR pSecurityDesc = NULL;
-                // const DWORD ERROR_SUCCESS = 0;
-                if (ERROR_SUCCESS ==
-                    GetSecurityInfo(fileHnd, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &dacl, NULL, &pSecurityDesc))
-                {
-                    ACCESS_MASK access;
-                    TRUSTEE tr;
-                    tr.pMultipleTrustee = NULL;
-                    tr.TrusteeForm = TRUSTEE_IS_NAME;
-                    tr.TrusteeType = TRUSTEE_IS_USER;
-                    tr.ptstrName = "CURRENT_USER";
-
-                    if (ERROR_SUCCESS ==
-                        GetEffectiveRightsFromAcl(dacl, &tr, &access))
-                    {
-                        std::string msg;
-                        // if (access & DELETE_CONTROL) msg += "DELETE\n";
-                        if (access & FILE_ADD_FILE) msg  += "\tFILE_ADD_FILE\n";
-                        if (access & FILE_ADD_SUBDIRECTORY) msg  += "\tFILE_ADD_SUBDIRECTORY\n";
-                        if (access & FILE_ALL_ACCESS) msg  += "\tFILE_ALL_ACCESS\n";
-                        if (access & FILE_DELETE_CHILD) msg  += "\tFILE_DELETE_CHILD\n";
-                        if (access & FILE_LIST_DIRECTORY) msg  += "\tFILE_LIST_DIRECTORY\n";
-                        if (access & FILE_READ_ATTRIBUTES) msg  += "\tFILE_READ_ATTRIBUTES\n";
-                        if (access & FILE_READ_EA) msg  += "\tFILE_READ_EA\n";
-                        if (access & FILE_TRAVERSE) msg  += "\tFILE_TRAVERSE\n";
-                        if (access & FILE_WRITE_ATTRIBUTES) msg  += "\tFILE_WRITE_ATTRIBUTES\n";
-                        if (access & FILE_WRITE_EA) msg  += "\tFILE_WRITE_EA\n";
-                        if (access & STANDARD_RIGHTS_READ) msg  += "\tSTANDARD_RIGHTS_READ\n";
-                        if (access & STANDARD_RIGHTS_WRITE) msg  += "\tSTANDARD_RIGHTS_WRITE\n";
-
-                        if (msg.length() != 0)
-                            LLMsg::Out() << std::endl <<  msg.c_str() << LLDir::sConfig.m_dirFieldSep;
-                    }
-
-                    LocalFree(pSecurityDesc);
-                }
-
-                // CloseHandle(fileHnd);
-            }
-
-        }
 
         if (m_showLink)
         {
@@ -1934,6 +1882,59 @@ int LLDir::ProcessEntry(
         }
 
         ColorEnd(colorOn, pFileData->dwFileAttributes);
+
+        if (m_showSecurity)
+        {
+            // http://www.ionicwind.com/forums/index.php?topic=3526.5;wap2
+            // Also look at GetFileSecurity(), GetNamedSecurityInfo()
+
+            Handle fileHnd =
+                CreateFile(m_srcPath, MAXIMUM_ALLOWED, 7, 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
+            // CreateFile(m_srcPath, FILE_READ_ATTRIBUTES, 7, 0, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, 0);
+            if (fileHnd.IsValid())
+            {
+                PACL dacl = NULL;
+                PSECURITY_DESCRIPTOR pSecurityDesc = NULL;
+                // const DWORD ERROR_SUCCESS = 0;
+                if (ERROR_SUCCESS ==
+                    GetSecurityInfo(fileHnd, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &dacl, NULL, &pSecurityDesc))
+                {
+                    ACCESS_MASK access;
+                    TRUSTEE tr;
+                    tr.pMultipleTrustee = NULL;
+                    tr.TrusteeForm = TRUSTEE_IS_NAME;
+                    tr.TrusteeType = TRUSTEE_IS_USER;
+                    tr.ptstrName = "CURRENT_USER";
+
+                    if (ERROR_SUCCESS ==
+                        GetEffectiveRightsFromAcl(dacl, &tr, &access))
+                    {
+                        std::string msg;
+                        // if (access & DELETE_CONTROL) msg += "DELETE\n";
+                        if (access & FILE_ADD_FILE) msg += "\tFILE_ADD_FILE\n";
+                        if (access & FILE_ADD_SUBDIRECTORY) msg += "\tFILE_ADD_SUBDIRECTORY\n";
+                        if (access & FILE_ALL_ACCESS) msg += "\tFILE_ALL_ACCESS\n";
+                        if (access & FILE_DELETE_CHILD) msg += "\tFILE_DELETE_CHILD\n";
+                        if (access & FILE_LIST_DIRECTORY) msg += "\tFILE_LIST_DIRECTORY\n";
+                        if (access & FILE_READ_ATTRIBUTES) msg += "\tFILE_READ_ATTRIBUTES\n";
+                        if (access & FILE_READ_EA) msg += "\tFILE_READ_EA\n";
+                        if (access & FILE_TRAVERSE) msg += "\tFILE_TRAVERSE\n";
+                        if (access & FILE_WRITE_ATTRIBUTES) msg += "\tFILE_WRITE_ATTRIBUTES\n";
+                        if (access & FILE_WRITE_EA) msg += "\tFILE_WRITE_EA\n";
+                        if (access & STANDARD_RIGHTS_READ) msg += "\tSTANDARD_RIGHTS_READ\n";
+                        if (access & STANDARD_RIGHTS_WRITE) msg += "\tSTANDARD_RIGHTS_WRITE\n";
+
+                        if (msg.length() != 0)
+                            LLMsg::Out()  << msg.c_str() << LLDir::sConfig.m_dirFieldSep << std::endl;
+                    }
+
+                    LocalFree(pSecurityDesc);
+                }
+
+                // CloseHandle(fileHnd);
+            }
+
+        }
 
         if (m_showStream)
             ShowAlternateDataStreams(pDir, *pFileData, depth);

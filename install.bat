@@ -26,7 +26,7 @@ rmdir /s Obj  2> nul
 @echo.
 @echo ---- Build done 
 if not exist "Bin\x64\Release\llfile.exe" (
-   echo Failed to build llfile.exe
+   echo Failed to build llfile.exe 
    goto _end
 )
 dir Bin\x64\Release\llfile.exe
@@ -53,6 +53,10 @@ pushd %bindir%
 llfile -xi > nul
 ld -i *.exe 
 popd
+
+@rem play happy tone
+rundll32.exe cmdext.dll,MessageBeepStub
+rundll32 user32.dll,MessageBeep
  
 :_end
 

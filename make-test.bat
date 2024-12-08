@@ -3,10 +3,18 @@ dir > test\x1
 dir > test\x2
 dir > test\x3
 cd test
-mkdir y dst val1 val2
-copy x* y\
-dir > val1\data1.txt
-copy val1\data1.txt val2\data2.txt
-dir > dst\data1.txt
-copy dst\data1.txt dat\data2.txt
+
+mkdir files 
+copy x* files\
+
+
+mkdir dirEmpty dir2 dir3 dir4
+
+dir > dir2\file1.txt
+dir > dir3\file1.txt
+dir > dir4\file1.txt
+
+dir > dir2\file2.txt
+dir > dir3\file2.txt
+dir > dir4\file2.txt
 
