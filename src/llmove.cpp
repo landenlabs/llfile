@@ -41,7 +41,7 @@
 #include "llmove.h"
 
 // Error codes in  WinError.h
-
+static const char* sLastMsg = nullptr;
 
 // ---------------------------------------------------------------------------
 
@@ -250,12 +250,17 @@ int LLMove::Run(const char* cmdOpts, int argc, const char* pDirs[])
             << "(MB/sec)\n";
     }
 
+    if (!m_verbose && sLastMsg != nullptr) {
+        std::cerr << "Move warning - " <<  sLastMsg << std::endl;
+    }
+
 	return ExitStatus((int)m_countOutFiles);
 }
 
 // ---------------------------------------------------------------------------
 static int ignore(bool verbose, const char* msg, const lstring& path)
 {
+    sLastMsg = msg;
     if (verbose) std::cerr << msg << path << std::endl;
     return sIgnore;
 }
@@ -264,7 +269,7 @@ static int ignore(bool verbose, const char* msg, const lstring& path)
 int LLMove::ProcessEntry(
         const char* pDir,
         const WIN32_FIND_DATA* pFileData,
-        int depth)      // 0...n is directory depth, -n end-of nth diretory
+        int depth)      // 0...n is directory depth, -n end-of nth directory
 {
     int retStatus = sIgnore;
 
@@ -280,10 +285,10 @@ int LLMove::ProcessEntry(
     //      m_timeOp        Time, -T[acm]<op><value>  ; Test Time a=access, c=creation, m=modified\n
     //
     //  If pass, populate m_srcPath
-    if ( !FilterDir(pDir, pFileData, depth))
-        return sIgnore;
+    if ( !FilterDir(pDir, pFileData, depth))  
+        return ::ignore(m_verbose, "ignore filtered out dir=", pDir );
 
-    if (m_isDir && (m_onlyAttr & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
+    if (m_isDir && (m_onlyAttr & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)  
         return sIgnore;
 
     bool createDir = true;

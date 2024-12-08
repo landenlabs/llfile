@@ -5,6 +5,7 @@
 set bindir=d:\opt\bin2
 set devenv="C:\PROGRA~1\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.com"
 set devenv=F:\opt\VisualStudio\2022\Preview\Common7\IDE\devenv.exe 
+set msbuild=F:\opt\VisualStudio\2022\Preview\MSBuild\Current\Bin\MSBuild.exe
 
 @rem @echo Clean Build 
 @rem %devenv% llfile.sln /Clean "Debug|x64" /Projectconfig "Debug|x64"
@@ -13,25 +14,22 @@ set devenv=F:\opt\VisualStudio\2022\Preview\Common7\IDE\devenv.exe
 
 @echo ---- Clean Release llfile
 del Bin\x64\Release\llfile.exe 2> nul
+lldu -sum Obj\x64\* 2> nul 
 rmdir /s Obj  2> nul
+@rem %msbuild% llfile.sln  -t:Clean
 
 @echo.
 @echo ---- Build Release llfile
-%devenv% llfile.sln /Build "Release|x64" 
-
-@rem if not exist "Bin\x64\Release\llfile.exe" (
-@rem @echo Try 2nd way of building.
-@rem %devenv% llfile.sln /Project zlib /Build "Release|x64"  /Projectconfig "Release|x64"
-@rem )
+@rem %devenv% llfile.sln /Project llfile /Build "Release|x64"  /Projectconfig "Release|x64"
+%msbuild% llfile.sln -p:Configuration="Release";Platform=x64 -verbosity:minimal  -detailedSummary:True
 
 @echo.
 @echo ---- Build done 
-dir Bin\x64\Release\llfile.exe
-
 if not exist "Bin\x64\Release\llfile.exe" (
-   echo ". . .  Failed to build llfile.exe "
+   echo Failed to build llfile.exe
    goto _end
 )
+dir Bin\x64\Release\llfile.exe
 
 @echo ---- Uninstall llfile
 Bin\x64\Release\llfile.exe -xu %bindir% > nul

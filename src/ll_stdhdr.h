@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// ll_stdhr - Projects standard header
+// ll_stdhdr - Projects standard header
 //
 // Author: Dennis Lang - 2015
 // http://landenlabs.com/
