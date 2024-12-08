@@ -414,7 +414,7 @@ int LLMove::ProcessEntry(
                         break;
                     }
                 }
-                else
+                else if ((m_moveFlags & MOVEFILE_CREATE_HARDLINK) == 0 )  // ignore check for src if hardlinked
                 {
 					BY_HANDLE_FILE_INFORMATION srcFileInfo;
 					bool srcExists = LLSup::GetFileInfo(m_srcPath, srcFileInfo);

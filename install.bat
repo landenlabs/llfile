@@ -7,23 +7,40 @@ set devenv="C:\PROGRA~1\Microsoft Visual Studio\2022\Community\Common7\IDE\deven
 set devenv=F:\opt\VisualStudio\2022\Preview\Common7\IDE\devenv.exe 
 
 @rem @echo Clean Build 
-@rem %devenv% llfile22.sln /Clean "Debug|x64" /Projectconfig "Debug|x64"
-@rem %devenv% llfile22.sln /Clean "Release|x64" /Projectconfig "Release|x64"
-@rem lr -rf Obj Bin
+@rem %devenv% llfile.sln /Clean "Debug|x64" /Projectconfig "Debug|x64"
+@rem %devenv% llfile.sln /Clean "Release|x64" /Projectconfig "Release|x64"
+ 
 
-@echo Build Release
-%devenv% llfile22.sln /Build "Release|x64"  /Projectconfig "Release|x64"
-%devenv% llfile22.sln /Project zlib /Build "Release|x64"  /Projectconfig "Release|x64"
+@echo ---- Clean Release llfile
+del Bin\x64\Release\llfile.exe 2> nul
+rmdir /s Obj  2> nul
 
-ld Bin
+@echo.
+@echo ---- Build Release llfile
+%devenv% llfile.sln /Build "Release|x64" 
 
-@echo Uninstall
-%bindir%\llfile.exe -xu %bindir%
+@rem if not exist "Bin\x64\Release\llfile.exe" (
+@rem @echo Try 2nd way of building.
+@rem %devenv% llfile.sln /Project zlib /Build "Release|x64"  /Projectconfig "Release|x64"
+@rem )
 
-@echo Copy Release to c:\opt\bin
-del %bindir%\llfile.exe
+@echo.
+@echo ---- Build done 
+dir Bin\x64\Release\llfile.exe
+
+if not exist "Bin\x64\Release\llfile.exe" (
+   echo ". . .  Failed to build llfile.exe "
+   goto _end
+)
+
+@echo ---- Uninstall llfile
+Bin\x64\Release\llfile.exe -xu %bindir% > nul
+Bin\x64\Release\llfile.exe -xr -f %bindir%\llfile.exe > nul
+Bin\x64\Release\llfile.exe %bindir%\*.exe
+
+@echo ---- Copy Release to c:\opt\bin2
 copy Bin\x64\Release\llfile.exe %bindir%\llfile.exe
-dir Bin\x64\Release\llfile.exe %bindir%\llfile.exe
+dir  Bin\x64\Release\llfile.exe %bindir%\llfile.exe
 
 :: @echo
 :: @echo Compare md5 hash
@@ -33,8 +50,11 @@ dir Bin\x64\Release\llfile.exe %bindir%\llfile.exe
 :: @echo List all llfile.exe
 :: ld -r -h -p -F=llfile.exe bin c:\opt\bin
 
-@echo If all good - install using llfile -xi
+@echo ---- Install using llfile -xi
 pushd %bindir%
-llfile -xi
+llfile -xi > nul
+ld -i *.exe 
 popd
+ 
+:_end
 

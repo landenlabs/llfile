@@ -143,8 +143,8 @@ static const char sHelp[] =
 "\n"
 "Examples:\n"
 "   ld -r file1 file2 dir1 dir2 \n"
-"   ld -r fi* *ir1\               ; Wildcard on directory name must end with slash \n"
-"   ld dir1\dir*\d*\file*.txt     ; Wildcard in path and files \n"
+"   ld -r fi* *ir1\\               ; Wildcard on directory name must end with slash \n"
+"   ld dir1\\dir*\\d*\\file*.txt     ; Wildcard in path and files \n"
 "   ld -F=*.exe,*.bat -r dir1     ; Find exe and batch files in dir1 \n"
 "   ld -P=*\\dir1\\* -F=*bat -r .   ; Find batch files in subdir dir1 \n"
 "\n";

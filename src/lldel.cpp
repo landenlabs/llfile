@@ -86,6 +86,7 @@ static const char sHelp[] =
 "                       ; starts with foo- \n"
 "       -rfq .\\foo-*    ; Similar delete all directories at current level \n"
 "                       ; and their files or which start with foo- \n"
+"  lr -rf dir*pat\ file*pat ; Directory pattern must end in slash else considered file pat\n"
 "\n"
 "  !0ePattern:!0f\n"
 "      * = zero or more characters\n"
@@ -211,7 +212,7 @@ int LLDel::Run(const char* cmdOpts, int argc, const char* pDirs[])
 
     if (m_force && !LLSec::IsElevated())
     {
-        ErrorMsg() << "Warning - you don't have elevated (admin) privileges\n";
+        // ErrorMsg() << "Warning - you don't have elevated (admin) privileges\n";
     }
 
     if (m_inFile.length() != 0)
@@ -468,9 +469,9 @@ int LLDel::ProcessEntry(
                             strerror_s(errBuf, sizeof(errBuf), _doserrno);
                             SetColor(LLDel::sConfig.m_colorError);
                             if (rmErr == ESRCH)
-                                ErrorMsg() << " del " << " file open or in use on " << m_srcPath << std::endl;
+                                ErrorMsg() << " del error - File open or in use on " << m_srcPath << std::endl;
                             else 
-                                ErrorMsg() << " del " << " error " << errBuf << " " << errmsg << " on " << m_srcPath << std::endl;
+                                ErrorMsg() << " del error - " << errBuf << " " << errmsg << " on " << m_srcPath << std::endl;
                             SetColor(LLDel::sConfig.m_colorNormal);
                         }
 
