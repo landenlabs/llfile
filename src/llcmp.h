@@ -90,8 +90,7 @@ public:
     static int StaticRun(const char* cmdOpts, int argc, const char* pDirs[]);
     int Run(const char* cmdOpts, int argc, const char* pDirs[]);
 
-    int ProcessEntry(const char* pDir, const WIN32_FIND_DATA* pFileData, int depth)
-    {  assert(0); return sError; } // Not implemented.
+    int ProcessEntry(const char* pDir, const WIN32_FIND_DATA* pFileData, int depth);
 
     void DoCmp(CmpMatch cmpMatch);
     void SortDirEntries();

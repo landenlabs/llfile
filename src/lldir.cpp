@@ -140,6 +140,13 @@ static const char sHelp[] =
 "   -0=<inFileList>     ; File contains list of files to list \n"
 "   -1=<outFile>        ; Redirect output to file \n"
 "   -3=<outFile>        ; Tee output to file \n"
+"\n"
+"Examples:\n"
+"   ld -r file1 file2 dir1 dir2 \n"
+"   ld -r fi* *ir1\               ; Wildcard on directory name must end with slash \n"
+"   ld dir1\dir*\d*\file*.txt     ; Wildcard in path and files \n"
+"   ld -F=*.exe,*.bat -r dir1     ; Find exe and batch files in dir1 \n"
+"   ld -P=*\\dir1\\* -F=*bat -r .   ; Find batch files in subdir dir1 \n"
 "\n";
 
 static const char sMoreHelp[] =
@@ -289,7 +296,7 @@ static std::ostream& Format(std::ostream& out, const FILETIME& utcFT)
 		double hours = minutes / 60.0;
 		double days = hours / 24.0;
 		double years = days / 365.25;
-		const int width = 8;
+		const int width = 13;
 		if (years >= 1.0)
 			out << std::fixed << std::setw(width) << std::setprecision(1) << years   << " years ";
 		else if (days >= 1.0)
@@ -492,7 +499,7 @@ bool LLDir::GetSoftLink(
     {
         if (IsReparseTagMicrosoft(fileData.dwReserved0) != 0)
         {
-            char fullFile[MAX_PATH];
+            char fullFile[LL_MAX_PATH];
             strcpy_s(fullFile, ARRAYSIZE(fullFile), pDir);
             strcat_s(fullFile, ARRAYSIZE(fullFile), "\\");
             strcat_s(fullFile, ARRAYSIZE(fullFile), fileData.cFileName);
@@ -541,7 +548,7 @@ bool LLDir::GetSoftLink(
                     isLink = true;
 #else
 #if 0
-                    char filenm[MAX_PATH];
+                    char filenm[LL_MAX_PATH];
                     int outLen = WideCharToMultiByte(CP_THREAD_ACP,
                          0,
                          rdb.PathBuffer,
@@ -587,7 +594,7 @@ bool LLDir::ShowAlternateDataStreams(
 {
     // DWORD fileAttribute = fileData.dwFileAttributes;
 
-    char fullFile[MAX_PATH];
+    char fullFile[LL_MAX_PATH];
     strcpy_s(fullFile, ARRAYSIZE(fullFile), pDir);
     strcat_s(fullFile, ARRAYSIZE(fullFile), "\\");
     strcat_s(fullFile, ARRAYSIZE(fullFile), fileData.cFileName);
@@ -644,7 +651,7 @@ bool LLDir::ShowAlternateDataStreams(
                 if (dwNameSize > 0 )
                 {
                     // read the stream name
-                    wchar_t   strStreamName[MAX_PATH]; //  = new char [dwNameSize + sizeof(char )];
+                    wchar_t   strStreamName[LL_MAX_PATH]; //  = new char [dwNameSize + sizeof(char )];
 
                     if (dwNameSize > sizeof(strStreamName) ||
                         !BackupRead(hFile,
@@ -1217,8 +1224,8 @@ int LLDir::Run(const char* cmdOpts, int argc, const char* pDirs[])
 int LLDir::DirFile(const char* fullFile, int depth)
 {
     WIN32_FIND_DATA fileData;
-    char name[MAX_PATH];
-    char dir[MAX_PATH];
+    char name[LL_MAX_PATH];
+    char dir[LL_MAX_PATH];
 
     const char* namePos = strrchr(fullFile, '\\');
     if (namePos != NULL)
@@ -1729,7 +1736,7 @@ int LLDir::ProcessEntry(
         std::string linkPath;
         bool hasSoftLink = GetSoftLink(linkPath, pDir, *pFileData);
 
-        static char prevDir[MAX_PATH] = "";
+        static char prevDir[LL_MAX_PATH] = "";
         if (m_showHeader &&
             (strcmp(pDir, prevDir)!=0 || m_dirCount + m_fileCount == 0) )
         {

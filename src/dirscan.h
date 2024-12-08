@@ -73,7 +73,7 @@ public:
     EntryType   m_entryType;
 
 
-    char        m_dir[MAX_PATH];
+    char        m_dir[LL_MAX_PATH];
     std::string m_fileFilter;
     std::vector<const char*> m_dirFilters;
     bool        m_recurse;
@@ -95,7 +95,7 @@ public:
     std::string m_pathPat;
 
     // Text comparison functions.
-    static bool YCaseChrCmp(char c1, char c2) { return c1 == c2; }
+    static constexpr bool YCaseChrCmp(char c1, char c2)  noexcept { return c1 == c2; }
     static bool NCaseChrCmp(char c1, char c2) { return ToLower(c1) == ToLower(c2); }
     static bool (*ChrCmp)(char c1, char c2);
 

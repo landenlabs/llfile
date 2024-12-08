@@ -212,7 +212,7 @@ Cmd GetDefaultCommand(const char* argv0)
     Cmd cmd = eNone;
 
     // Isolate program name.  c:/dir/dir/Prognm.exe  =>  prognm.exe
-    char prognm[MAX_PATH];
+    char prognm[LL_MAX_PATH];
     strcpy_s(prognm, ARRAYSIZE(prognm), argv0);
 
     int nmLen = (int)strlen(prognm);
@@ -399,7 +399,10 @@ int main(int argc, const char* argv[])
 		case eUninstall:
             {
                 char dir[_MAX_DIR];
-                _splitpath(argv[0], nullptr, dir, nullptr, nullptr);
+                if (passArgc == 1)
+                    strcpy(dir, passArgv[0]);
+                else 
+                    _splitpath(argv[0], nullptr, dir, nullptr, nullptr);
                 SetCurrentDirectory(dir);
 
                 const char* installArgs[2];
@@ -424,8 +427,8 @@ int main(int argc, const char* argv[])
                     // Hardlink llfile.exe to <alias>.exe
 
                     // LLMsg::Out() << "llfile -xr -f " << installArgs[0] << std::endl;
-                    // const char sDelOptions[] = "f" sEOCstr;
-                    // exitStatus |= LLDel::StaticRun(sDelOptions, 1, installArgs);
+                    const char sDelOptions[] = "f" sEOCstr;
+                    exitStatus |= LLDel::StaticRun(sDelOptions, 1, installArgs);
 
                     // Can't break links while app is running, instead output commands to be run in batch file.
                     LLMsg::Out() << "del " << installArgs[0] << std::endl;

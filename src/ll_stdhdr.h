@@ -34,6 +34,13 @@
 #include <string>
 #include <iosfwd>
 
+// https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
+// enable in registry 
+//   [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem]  "LongPathsEnabled" = dword : 00000001
+// enable long path in ap manifest
+//   longPathAware 
+#define LL_MAX_PATH 512     // Windows OS MAX_PATH is 256
+
 using namespace std;
 #if 0
 typedef long            Long;
@@ -50,11 +57,11 @@ const int sIgnore = 0;
 const int sError  = -1;
 
 
-inline char ToUpper(char c)
+inline char ToUpper(char c) noexcept
 {  return (char)toupper(c); }
-inline char ToLower(char c)
+inline char ToLower(char c) noexcept
 {  return (char)tolower(c); }
-inline char ToUnixSlash(char c)
+inline char ToUnixSlash(char c) noexcept
 { return (c == '\\') ? '/' : c; }
-inline char ToDosSlash(char c)
+inline char ToDosSlash(char c) noexcept
 { return (c == '/') ? '\\' : c; }

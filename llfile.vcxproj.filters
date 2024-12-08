@@ -184,4 +184,7 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\..\..\..\..\Users\DennisLang\Downloads\llfile.manifest" />
+  </ItemGroup>
 </Project>

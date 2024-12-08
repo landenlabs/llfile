@@ -165,12 +165,14 @@ bool LLBase::ParseBaseCmds(const char*& cmdOpts)
 
 // ---------------------------------------------------------------------------
 //  Filter on:
-//      m_onlyAttr      File or Directory, -F or -D
-//      m_onlyRhs       Attributes, -A=rhs
-//      m_includeList   File patterns,  -F=<filePat>[,<filePat>]...
-//      m_onlySize      File size,  -Z op=(Greater|Less|Equal) value=num<units G|M|K>, ex -Zg100M
-//      m_excludeList   Exclude path patterns, -X=<pathPat>[,<pathPat>]...
-//      m_timeOp        Time, -T[acm]<op><value>  ; Limit by Time a=access, c=creation, m=modified\n
+//      m_onlyAttr          File or Directory, -F or -D
+//      m_onlyRhs           Attributes,     -A=rhs
+//      m_includeDirList    Directories     -D=<dirPat>[,<dirPat>]....
+//      m_includeList       File patterns,  -F=<filePat>[,<filePat>]... 
+//      m_grepSrcPathPat    Path pattern    -P=<pathPattern>
+//      m_onlySize          File size,      -Z op=(Greater|Less|Equal) value=num<units G|M|K>, ex -Zg100M
+//      m_excludeList       Exclude path patterns, -X=<pathPat>[,<pathPat>]...
+//      m_timeOp            Time, -T[acm]<op><value>  ; Limit by Time a=access, c=creation, m=modified\n
 //
 //  Updates m_isDir, m_srcPath and m_fileSize, m_countInDir, m_countInFiles
 bool LLBase::FilterDir(
@@ -215,7 +217,7 @@ bool LLBase::FilterDir(
         if ( !LLSup::PatternListMatches(m_includeFileList, pFileData->cFileName, true))
             return false;
         if (m_grepSrcPathPat.flags() != 0 &&
-            !std::tr1::regex_search(m_srcPath.begin(), m_srcPath.end(), m_grepSrcPathPat))
+            !std::regex_search(m_srcPath.begin(), m_srcPath.end(), m_grepSrcPathPat))
             return false;
         if ( !SizeOperation(m_fileSize, m_onlySizeOp, m_onlySize))
             return false;
@@ -259,11 +261,13 @@ void LLBase::MakeDstPath(
 }
 
 // ---------------------------------------------------------------------------
-void LLBase::MakeDstPathEx(
+bool LLBase::MakeDstPathEx(
     const char* dstDir,
     const WIN32_FIND_DATA* pFileData,
-    const char* pPattern)
+    const char* pPattern,
+    bool createDirs)
 {
+    bool status = true;
     MakeDstPath(dstDir, pFileData, pPattern);
 
     uint  wantSubIdx;
@@ -286,14 +290,15 @@ void LLBase::MakeDstPathEx(
             m_dstPath = LLPath::Join(m_dstPath, m_srcPath + srcIdx);    // Add part of source path.
 
         // Create all but last, which is the file.
-        LLSup::CreateDirectories(m_dstPath, 1, m_exec);
+        if (createDirs)
+            status = LLSup::CreateDirectories(m_dstPath, 1, m_exec);
     }
     else
     {
         // m_dstPath = LLPath::Join(m_dstPath, pFileData->cFileName);
     }
 
-    if (m_isDir)
+    if (m_isDir && createDirs)
     {
         int countFiles = 0;
         if ((m_onlyAttr & FILE_ATTRIBUTE_DIRECTORY) != 0 && m_onlyAttr != FILE_ATTRIBUTE_DIRECTORY)
@@ -301,10 +306,12 @@ void LLBase::MakeDstPathEx(
             // Special mode, only copy directory tree if destination does not exist
             // and coping files and directories. If just directories don't make destination.
             bool pathExists = LLPath::PathExists(m_dstPath);
-            if (!pathExists)
-                LLSup::CreateDirectories(m_dstPath, 0, m_exec);
+            if (!pathExists )
+                status = LLSup::CreateDirectories(m_dstPath, 0, m_exec);
         }
     }
+
+    return status;
 }
 
 // ---------------------------------------------------------------------------
@@ -323,7 +330,7 @@ bool LLBase::FilterGrep()
                 std::string str;
                 while (std::getline(in, str))
                 {
-                    if (std::tr1::regex_search(str.begin(), str.end(), m_grepLinePat))
+                    if (std::regex_search(str.begin(), str.end(), m_grepLinePat))
                     {
                         return true;
                     }

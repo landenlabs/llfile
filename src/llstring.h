@@ -89,10 +89,10 @@ template <typename T>
 class LLPool
 {
 public:
-    LLPool() {}
+    LLPool() noexcept {}
     ~LLPool() { Clear(); }
 
-    void Clear()
+    void Clear() noexcept
     {
         for (size_t i=0; i < m_buckets.size(); ++i)
         {
@@ -136,7 +136,7 @@ private:
     struct Bucket
     {
         static const int sBucketSize = 4096*16;
-        Bucket() : topPtr(new char[sBucketSize]), nextPtr(topPtr), endPtr(topPtr+sBucketSize){}
+        Bucket() noexcept : topPtr(new char[sBucketSize]), nextPtr(topPtr), endPtr(topPtr+sBucketSize){}
         ~Bucket() { delete [] topPtr; }
         char* topPtr;
         char* nextPtr;
@@ -155,13 +155,13 @@ struct LLString
         m_str(m_pool.Add(str, sizeof(char)*(strlen(str)+1)))
     {}
 
-    operator const char*()
+    operator const char*() noexcept
     { return m_str; }
 
-    operator const char*() const
+    operator const char*() const noexcept
     { return m_str; }
 
-    const char* c_str() const
+    const char* c_str() const noexcept
     { return m_str; }
 
     const char* m_str;

@@ -59,7 +59,7 @@
 #define QUOTE(x) Q(x)
 
  // C++ version _CPPLIB_VER 
-#define LLVERSION "v17.06s" LLBLDBITS LLCHAR " C++_" QUOTE(_CPPLIB_VER) " " __DATE__
+#define LLVERSION "v19.03s" LLBLDBITS LLCHAR " C++_" QUOTE(_CPPLIB_VER) " " __DATE__
 
 
 #include "ll_stdhdr.h"
@@ -229,7 +229,7 @@ inline bool CompareRhsBits(DWORD file, DWORD show)
 }
 
 
-int RemoveFile(const char* filePath, bool DelToRecycleBin);
+int RemoveFile(const char* filePath, bool DelToRecycleBin, bool secureRemove = false);
 int RemoveDirectory(const char* dirPath, bool DelToRecycleBin);
 
 // Create directories, nDirs=# to skip from right, return true if any dir made.
@@ -247,7 +247,14 @@ DWORD AppendFile(const char* srcFile, const char* dstFile, LPPROGRESS_ROUTINE  p
 
 DWORD CopyFollowFile(const char* srcFile, const char* dstFile, LPPROGRESS_ROUTINE  pProgreeCb,
 	void* pData, BOOL* pCancel, DWORD flags);
-};
+
+DWORD OverWriteFile( const char* dstFile,
+    LPPROGRESS_ROUTINE  pProgreeCb = NULL, // nullable
+    void* pData = NULL,                    // nullable
+    BOOL* pCancel = NULL,                  // nullable
+    DWORD flags = 0);                      // Not currently used
+
+};  // End-of-namespace LLSup
 
 // Class to allow commands to run in the background.
 class RunCommands

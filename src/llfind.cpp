@@ -50,13 +50,14 @@ static const char sHelp[] =
 "   -A=[nrhs]           ; Limit files by attribute (n=normal r=readonly, h=hidden, s=system)\n"
 "   -D                  ; Only directories in matching, default is all types\n"
 "   -D=<dirPattern>     ; Only directories matching dirPttern \n"
-"   -p                  ; Search PATH environment directories for pattern\n"
+
 "   -e=<envName>[,...]  ; Search env environment directories for pattern\n"
 "   -F                  ; Only files in matching, default is all types\n"
 "   -F=<filePat>,...    ; Limit to matching file patterns \n"
 "   -G=<grepPattern>    ; Find only if file contains grepPattern \n"
 "   -g=<grepRange>      ;  default is search entire file, +n=first n lines \n"
 "   -I=<file>           ; Read list of files from this file\n"
+"   -p                  ; Search PATH environment directories for pattern\n"
 "   -p                  ; Short cut for -e=PATH, search path \n"
 "   -P=<srcPathPat>     ; Optional regular expression pattern on source files full path\n"
 "   -q                  ; Quiet, default is echo command\n"
@@ -70,7 +71,11 @@ static const char sHelp[] =
 "   -E=[cFDdsa]         ; Return exit code, c=file+dir count, F=file count, D=dir Count\n"
 "                       ;    d=depth, s=size, a=age \n"
 "   -r                  ; Don't recurse into subdirectories\n"
+"   -R                  ; Relative path \n"
+"   -B                  ; aBsolute path \n"
 "   -1=<file>           ; Redirect output to file \n"
+"   -~                  ; Relative time, use with -t...  \n"
+"   -,                  ; Comma in size, use with -s  \n"
 "\n"
 "  !0eWhere Pattern is:!0f\n"
 "    <file|Pattern> \n"
@@ -90,7 +95,7 @@ static const char sHelp[] =
 "\n"
 "    lf -e=LIB libfoo.lib             ; search env LIB's path for libfoo.lib\n"
 "    lf -F=*.exe,*.com,*.bat .\\*      ; search for executables or batch files\n"
-"    lf -F -X=*.obj,*.exe  build\\*    ; search for none object or exe files\n"
+"    lf -F -X=*.obj,*.exe  build\\*    ; search for not obj or exe files\n"
 "\n"
 "\n";
 
@@ -109,6 +114,7 @@ LLFind::LLFind() :
         m_showAtime =
         m_showPath =
         m_showSize  =  false;
+    m_showRelPath = true;
 
     memset(&m_fileData, 0, sizeof(m_fileData));
     m_dirScan.m_recurse = true;
@@ -153,6 +159,12 @@ int LLFind::Run(const char* cmdOpts, int argc, const char* pDirs[])
         pDirs = sDefDir;
     }
 
+    // Get current directory as default starting point.
+    char currentDir[LL_MAX_PATH];
+    GetCurrentDirectory(ARRAYSIZE(currentDir), currentDir);
+    m_pCwd = currentDir;
+ 
+
     // Parse options
     while (*cmdOpts)
     {
@@ -180,6 +192,13 @@ int LLFind::Run(const char* cmdOpts, int argc, const char* pDirs[])
                 m_envStr += pathStr;
                 m_envStr += endPathStr;
             }
+            break;
+
+         case 'B': // Absolute   (-A used for attributes)
+            m_showRelPath = false;
+            break;
+        case 'R': // Relative
+            m_showRelPath = true;
             break;
 
         case 's':   // Toggle showing size.
@@ -221,7 +240,9 @@ int LLFind::Run(const char* cmdOpts, int argc, const char* pDirs[])
         case ',':
             DisableCommaCout();
             break;
-
+        case '~':   // Toggle relative time display 
+            LLFind::sConfig.m_refDateTime = !LLFind::sConfig.m_refDateTime;
+            break;
         case '?':
             Colorize(std::cout, sHelp);
             return sIgnore;
@@ -252,7 +273,7 @@ int LLFind::Run(const char* cmdOpts, int argc, const char* pDirs[])
         if (strcmp(m_inFile.c_str(), "-") == 0 ||
             0 == fopen_s(&fin, m_inFile.c_str(), "rt"))
         {
-            char fileName[MAX_PATH];
+            char fileName[LL_MAX_PATH];
             while (fgets(fileName, ARRAYSIZE(fileName), fin))
             {
                 TrimString(fileName);       // remove extra space or control characters.
@@ -345,6 +366,89 @@ int LLFind::Run(const char* cmdOpts, int argc, const char* pDirs[])
 	return ExitStatus(0);
 }
 
+ 
+
+// ---------------------------------------------------------------------------
+static FILETIME operator-(const FILETIME& leftFt, const FILETIME& rightFt)
+{
+    FILETIME fTime;
+    ULARGE_INTEGER v_ui;
+
+    v_ui.LowPart = leftFt.dwLowDateTime;
+    v_ui.HighPart = leftFt.dwHighDateTime;
+    __int64 v_left = v_ui.QuadPart;
+
+    v_ui.LowPart = rightFt.dwLowDateTime;
+    v_ui.HighPart = rightFt.dwHighDateTime;
+    __int64 v_right = v_ui.QuadPart;
+
+    __int64 v_res = v_left - v_right;
+
+    v_ui.QuadPart = v_res;
+    fTime.dwLowDateTime = v_ui.LowPart;
+    fTime.dwHighDateTime = v_ui.HighPart;
+    return fTime;
+}
+
+// ---------------------------------------------------------------------------
+// returns a UNIX-like timestamp (in seconds since 1970) with sub-second resolution.
+static double time_d(const FILETIME& ft)
+{
+    // GetSystemTimeAsFileTime(&ft);
+    const __int64* val = (const __int64*)&ft;
+    return static_cast<double>(*val) / 10000000.0 - 11644473600.0;   // epoch is Jan. 1, 1601: 134774 days to Jan. 1, 1970
+}
+ 
+// ---------------------------------------------------------------------------
+static std::ostream& Format(std::ostream& out, const FILETIME& utcFT)
+{
+    FILETIME   locTmFT;
+    SYSTEMTIME sysTime;
+
+
+    if (LLFind::sConfig.m_refDateTime)
+    {
+        SYSTEMTIME nowStUtc;
+        GetSystemTime(&nowStUtc);
+        FILETIME nowFtUtc;
+        SystemTimeToFileTime(&nowStUtc, &nowFtUtc);
+
+        FILETIME deltaFt = nowFtUtc - utcFT;
+        __int64* delta64 = (__int64*)&deltaFt;
+        double seconds = static_cast<double>(*delta64) / 10000000.0;
+        double minutes = seconds / 60.0;
+        double hours = minutes / 60.0;
+        double days = hours / 24.0;
+        double years = days / 365.25;
+        const int width = 12;
+        if (years >= 1.0)
+            out << std::fixed << std::setw(width) << std::setprecision(1) << years << " years ";
+        else if (days >= 1.0)
+            out << std::fixed << std::setw(width) << std::setprecision(1) << days << " days  ";
+        else if (hours >= 1.0)
+            out << std::fixed << std::setw(width) << std::setprecision(1) << hours << " hours ";
+        else if (minutes >= 1.0)
+            out << std::fixed << std::setw(width) << std::setprecision(1) << minutes << " mins  ";
+        else
+            out << std::fixed << std::setw(width) << std::setprecision(1) << seconds << " secs  ";
+
+        return out;
+    }
+
+    FileTimeToSystemTime(&utcFT, &sysTime);
+    LLSup::Format(out, utcFT);
+
+    return out;
+}
+
+// ---------------------------------------------------------------------------
+const char* relative(const char* fullPath, const char* cwd) {
+    unsigned cwdLen = strlen(cwd);
+    return (strnicmp(fullPath, cwd, cwdLen) == 0)
+        ? fullPath + cwdLen + 1
+        : fullPath;
+}
+
 // ---------------------------------------------------------------------------
 int LLFind::ProcessEntry(
         const char* pDir,
@@ -390,15 +494,19 @@ int LLFind::ProcessEntry(
             LLMsg::Out() << LLFind::sConfig.m_dirFieldSep;
         }
         if (m_showCtime)
-            LLSup::Format(LLMsg::Out(), pFileData->ftCreationTime) << LLFind::sConfig.m_dirFieldSep ;
+            Format(LLMsg::Out(), pFileData->ftCreationTime) << LLFind::sConfig.m_dirFieldSep ;
         if (m_showMtime)
-            LLSup::Format(LLMsg::Out(), pFileData->ftLastWriteTime) << LLFind::sConfig.m_dirFieldSep;
+            Format(LLMsg::Out(), pFileData->ftLastWriteTime) << LLFind::sConfig.m_dirFieldSep;
         if (m_showAtime)
-            LLSup::Format(LLMsg::Out(), pFileData->ftLastAccessTime) << LLFind::sConfig.m_dirFieldSep;
+            Format(LLMsg::Out(), pFileData->ftLastAccessTime) << LLFind::sConfig.m_dirFieldSep;
         if (m_showSize)
             LLMsg::Out() << std::setw(LLFind::sConfig.m_fzWidth) << m_fileSize << LLFind::sConfig.m_dirFieldSep;
 
-        LLMsg::Out() << m_srcPath << std::endl;
+        // m_dirScan.
+        if (m_showRelPath) 
+            LLMsg::Out() << relative(m_srcPath, m_pCwd) << std::endl;
+        else
+            LLMsg::Out() << m_srcPath << std::endl;
     }
 
     m_totalSize += m_fileSize;

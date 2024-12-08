@@ -234,7 +234,7 @@ int LLExec::Run(const char* cmdOpts, int argc, const char* pDirs[])
 
 	if (m_appendCount == 0)
 	{
-		char currentDir[MAX_PATH];
+		char currentDir[LL_MAX_PATH];
 		GetCurrentDirectory(ARRAYSIZE(currentDir), currentDir);
 		WIN32_FIND_DATA data;
 		strcpy(data.cAlternateFileName, "none");

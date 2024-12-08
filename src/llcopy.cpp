@@ -329,6 +329,13 @@ bool LLCopy::CopyFile(
 }
 
 // ---------------------------------------------------------------------------
+static int ignore(bool verbose, const char* msg, const lstring& path)
+{
+    if (verbose) std::cerr << msg << path << std::endl;
+    return sIgnore;
+}
+
+// ---------------------------------------------------------------------------
 int LLCopy::ProcessEntry(
         const char* pDir,
         const WIN32_FIND_DATA* pFileData,
@@ -435,9 +442,9 @@ int LLCopy::ProcessEntry(
 	if (dstExists)
 	{
 		if (m_older && dstAge >= 0)
-			return sIgnore;
-		if (!m_overWrite)
-			return sIgnore;
+			return ::ignore(m_verbose, "ignore downgrade (see -O and -o) ", m_dstPath);
+        if (!m_overWrite)
+            return ::ignore(m_verbose, "ignore overwrite (see -O and -o) ", m_dstPath);
 	}
 	bool conflict = dstExists && ( !m_force && !LLPath::IsWriteable(dstAttributes));
 

@@ -126,13 +126,13 @@ static const char sHelp[] =
 "                       ;  So *\\ma will exclude a directory ma or file ma \n"
 "   -Z=<op><value>      ; siZe op=(Greater|Less|Equal) value=num<units G|M|K>, ex -Zg100M \n"
 "\n"
-"  !0eSpecial actions:!0f (files to delete are sorted, not argument order)\n"
+"  !0eSpecial actions:!0f !0c(files to delete are sorted, not argument order)!0f\n"
 "   -h                  ; Show MD5 hash only, no compare \n"
 "   -d=e1 | -d=n1       ; Delete matching (-d=e) or not matching files (-d=n) \n"
 "                       ;   -d=e all files, -d=e1 first file, -d=e2 second file \n"
 "   -d=g | -d=l         ; Delete greatest size file or least size file \n"
 "   -d=g2 | -d=l2       ; Delete 2nd file if greatest or least size \n"
-"   -n                  ; Don't execute delete, just show command delete command \n"
+"   !0c-n                  ; Don't execute delete, just show command delete command!0f \n"
 "\n"
 "  !0eExit value (%ERRORLEVEL%):!0f\n"
 "   -E=e                ; return #equal \n"
@@ -169,8 +169,29 @@ static bool CmpMatchPath(const LLDirEntry* p1, const LLDirEntry* p2, unsigned /*
 // Uses static buffers, not thread safe.
 static const char* DisplayMD4Hash(const char* filePath)
 {
+    // Invalid characters in filename -
+    //     5 wildcard characters ( *?"<> ), 
+    //    other reserved characters ( /|:\ ),
+    //    or control
+    //
+    //  \\?\ just bypasses file path processing in the user-mode runtime library, on full path
+    // 
     Handle fHnd = CreateFile(filePath, GENERIC_READ, SHARE_ALL, 0,
-            OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, 0);
+            OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN | FILE_FLAG_POSIX_SEMANTICS, 0);
+
+    if (fHnd.NotValid()) {
+        DWORD err = GetLastError();   // ERROR_INVALID_NAME
+        ErrorMsg() << "Error: " << LLMsg::GetLastErrorMsg() << " on file:" << filePath << std::endl;
+#if 0
+        struct _stat buf;
+        int result = _stat(filePath, &buf);
+        
+        wstring extPath = L"\\\\?\\"; 
+        extPath += wstring(filePath, filePath+strlen(filePath));
+        fHnd = CreateFileW(extPath.c_str(), GENERIC_READ, SHARE_ALL, 0,
+            OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN | FILE_FLAG_POSIX_SEMANTICS, 0);
+#endif
+    }
 
     const uint sBufSize = 4096*16;
     static std::vector<Byte> vBuffer(sBufSize);
@@ -272,11 +293,12 @@ int LLCmp::Run(const char* cmdOpts, int argc, const char* pDirs[])
     {
         switch (*cmdOpts)
         {
-    //  Delete options, -d and -n
-        case 'd':   // de1 = delete equal, dn1 = delete not equal, 
-					// dg = delete greatest file, dg2 delete 2nd file if greatest
-					// dl = delete least file, dl2 delete 2nd file is least
-            cmdOpts = LLSup::ParseString(cmdOpts+1, str, delOptErrMsg);
+    
+        case 'd':   // -d = show only differences
+                    // -de1 = delete equal, -dn1 = delete not equal, 
+					// -dg = delete greatest file, dg2 delete 2nd file if greatest
+					// -dl = delete least file, dl2 delete 2nd file is least
+            cmdOpts = LLSup::ParseString(cmdOpts+1, str, (*cmdOpts == sEQchr) ? delOptErrMsg : nullptr);
             m_delFiles = -1;
 			switch (str[0])
 			{
@@ -447,7 +469,7 @@ int LLCmp::Run(const char* cmdOpts, int argc, const char* pDirs[])
 
     if (m_showMD5hash)
     {
-        char filePath[MAX_PATH];
+        char filePath[LL_MAX_PATH];
         unsigned fileIdx = 0;
         LLDirEntry*  pDirEntry = m_dirSort.m_pFirst;
         LLMsg::Out() << "                             MD5, FileSize, File\n";
@@ -545,10 +567,8 @@ int LLCmp::Run(const char* cmdOpts, int argc, const char* pDirs[])
         case 'd':
             retValue += m_diffCount;
             break;
-            break;
         case 'n':
             retValue += m_diffLineCount;
-            break;
             break;
         case 'l':
             retValue += m_skipCount[0];
@@ -814,7 +834,7 @@ std::ostream& LLCmp::PrintPath(const char* msg, const LLDirEntry* dirEntry0, con
 {
 	int depth = 0;
 	WIN32_FIND_DATA fileData;
-	char filePath[MAX_PATH];
+	char filePath[LL_MAX_PATH];
 
 	LLMsg::Out() << msg;
 
@@ -823,16 +843,15 @@ std::ostream& LLCmp::PrintPath(const char* msg, const LLDirEntry* dirEntry0, con
 		dirEntry0->filenameLStr);
 	m_dirSort.m_fillFindData(fileData, *dirEntry0, m_dirSort);
 	strncpy(fileData.cFileName, dirEntry0->filenameLStr, MAX_PATH);
-	LLPrintf::PrintFile(m_pushArgs, m_printFmt, dirEntry0->szDir, filePath, &fileData, depth);
+        LLPrintf::PrintFile(m_pushArgs, m_printFmt, dirEntry0->szDir, filePath, &fileData, depth);
 
 	LLMsg::Out() << ", ";
 	sprintf_s(filePath, ARRAYSIZE(filePath), "%s\\%s",
 		dirEntry1->szDir,
 		dirEntry1->filenameLStr);
 	m_dirSort.m_fillFindData(fileData, *dirEntry1, m_dirSort);
-	strncpy(fileData.cFileName, dirEntry1->filenameLStr, MAX_PATH);
-	LLPrintf::PrintFile(m_pushArgs, m_printFmt, dirEntry1->szDir, filePath, &fileData, depth);
-
+    strncpy(fileData.cFileName, dirEntry1->filenameLStr, MAX_PATH);
+        LLPrintf::PrintFile(m_pushArgs, m_printFmt, dirEntry1->szDir, filePath, &fileData, depth);
 	return LLMsg::Out();
 }
 
@@ -841,8 +860,8 @@ int LLCmp::CompareFileData(DirEntryList& dirEntryList)
 {
     int resultStatus = sIgnore;
 
-    char filePath1[MAX_PATH];
-    char filePath2[MAX_PATH];
+    char filePath1[LL_MAX_PATH];
+    char filePath2[LL_MAX_PATH];
 
     if (dirEntryList.size() == 0)
         return resultStatus;
@@ -925,16 +944,16 @@ int LLCmp::CompareFileData(DirEntryList& dirEntryList)
                 {
                     switch (m_delFiles)
                     {
-                    case -1:
-                        if (fileIdx+1 == dirEntryList.size())
+                    case -1: // Both files
+                        // if (fileIdx + 1 == dirEntryList.size())   // Why is this logic here
                             DeleteCmpFile(filePath1);
                         DeleteCmpFile(filePath2);
                         break;
-                    case 0:
-                        if (fileIdx+1 == dirEntryList.size())
+                    case 0: // First file
+                        // if (fileIdx+1 == dirEntryList.size())   // Why is this logic here
                             DeleteCmpFile(filePath1);
                         break;
-                    case 1:
+                    case 1: // Second file
 					    DeleteCmpFile(filePath2);
                         break;
                     }
@@ -999,16 +1018,16 @@ int LLCmp::CompareFileData(DirEntryList& dirEntryList)
 				case eNoMatchDel:
 					switch (m_delFiles)
                     {
-                    case -1:
-                        if (fileIdx+1 == dirEntryList.size())
+                    case -1:    // Both files
+                        // if (fileIdx + 1 == dirEntryList.size())   // Why is this logic here
                             DeleteCmpFile(filePath1);
                         DeleteCmpFile(filePath2);
                         break;
-                    case 0:
-                        if (fileIdx+1 == dirEntryList.size())
+                    case 0: // Frist file
+                        // if (fileIdx+1 == dirEntryList.size())    // Why is this logic here
                             DeleteCmpFile(filePath1);
                         break;
-                    case 1:
+                    case 1: // Second file
 					    DeleteCmpFile(filePath2);
                         break;
                     }
@@ -1046,8 +1065,8 @@ int LLCmp::CompareFileData(DirEntryList& dirEntryList)
 // ---------------------------------------------------------------------------
 int LLCmp::CompareFileSpecs(DirEntryList& dirEntryList)
 {
-    char filePath0[MAX_PATH];
-    char filePathN[MAX_PATH];
+    char filePath0[LL_MAX_PATH];
+    char filePathN[LL_MAX_PATH];
 
     if (dirEntryList.size() == 0)
         return sIgnore;
@@ -1354,12 +1373,21 @@ void  LLCmp::SortDirEntries()
 }
 
 // ---------------------------------------------------------------------------
+int LLCmp::ProcessEntry(const char* pDir, const WIN32_FIND_DATA* pFileData, int depth)
+{
+    // Not called, entire dir tree is scanned and sorted and then DoCmp is called. 
+    assert(0); 
+    return sError;
+} 
+
+
+// ---------------------------------------------------------------------------
 void  LLCmp::DoCmp(CmpMatch cmpMatch)
 {
     int resultStatus = sIgnore;
     LLDirEntry* pDirEntry = m_dirSort.m_pFirst;
     DirEntryList cmpList;
-	char filePath[MAX_PATH]; 
+	char filePath[LL_MAX_PATH]; 
 
     size_t dirEntryCnt = 0;
     while (pDirEntry)

@@ -1060,7 +1060,7 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
                     std::string envItem = pEnvList;
                     if (Count(envItem, '=') == 1 &&
 						(m_grepSrcPathPat.flags() == 0 ||
-                        std::tr1::regex_search(envItem.begin(), envItem.end(), m_grepSrcPathPat)))
+                        std::regex_search(envItem.begin(), envItem.end(), m_grepSrcPathPat)))
                         inList.push(envItem);
                     pEnvList += envItem.length() + 1;
                 }
@@ -1108,7 +1108,7 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
             cmdOpts = LLSup::ParseString(cmdOpts+1, str, scanOptMsg);
             if (str.length() != 0)
             {
-                m_regex = std::tr1::regex(str);
+                m_regex = std::regex(str);
 
                 if (inText.length() != 0)
                 {
@@ -1125,8 +1125,8 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
                         inList.pop();
 
                         // object that will contain the sequence of sub-matches
-                        std::tr1::match_results<std::string::const_iterator> result;
-                        if (std::tr1::regex_match(s, result, m_regex))
+                        std::match_results<std::string::const_iterator> result;
+                        if (std::regex_match(s, result, m_regex))
                         {
                             StringQueue matchResults;
                             for (unsigned rIdx = 0; rIdx < result.size(); ++rIdx)
@@ -1154,23 +1154,19 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
                 }
 
                 VerboseMsg() << "printFmt=" << m_printFmt << std::endl;
-                if (strchr(m_printFmt, '%') == NULL)
+                
+                if (inList.empty()) 
                 {
-                    // If no printf arguments required, print now
-					while (!inList.empty())
-						PrintFormatted(m_printFmt, inList, ++nLine);
+                    PrintFormatted(m_printFmt, inList, ++nLine);
+                } 
+                else 
+                {
+                    if (strchr(m_printFmt, '%') != NULL)
+                        SlitOnSeparators(inList, m_separators);
+                
+                    while (!inList.empty())
+                        PrintFormatted(m_printFmt, inList, ++nLine);
                     m_printFmt.clear();
-                }
-                else
-                {
-                    // Only print while we have input.
-                    if (inList.size())
-                    {
-						SlitOnSeparators(inList, m_separators);
-                        while (!inList.empty())
-                            PrintFormatted(m_printFmt, inList, ++nLine);
-                        m_printFmt.clear();
-                    }
                 }
             }
             break;
@@ -1264,19 +1260,27 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
         }
     }
 
-    while (inList.size() > 0)
+    if (m_printFmt.empty() && inList.size() == 0 && argc == 1) 
     {
-        StringQueue matchResults;
-        std::string listItem = inList.front();
-        inList.pop();
-
-        if (m_grepSrcPathPat.flags() == 0 ||
-            std::tr1::regex_search(listItem.begin(), listItem.end(), m_grepSrcPathPat))
+        m_printFmt = pDirs[0];
+        PrintFormatted(m_printFmt, inList, ++nLine);
+    } 
+    else
+    {
+        while (inList.size() > 0)
         {
-			matchResults.push(listItem);
-			SlitOnSeparators(matchResults, m_separators);
-			while (!matchResults.empty())
-				PrintFormatted(m_printFmt, matchResults, ++nLine);
+            StringQueue matchResults;
+            std::string listItem = inList.front();
+            inList.pop();
+
+            if (m_grepSrcPathPat.flags() == 0 ||
+                std::regex_search(listItem.begin(), listItem.end(), m_grepSrcPathPat))
+            {
+                matchResults.push(listItem);
+                SlitOnSeparators(matchResults, m_separators);
+                while (!matchResults.empty())
+                    PrintFormatted(m_printFmt, matchResults, ++nLine);
+            }
         }
     }
 

@@ -84,7 +84,7 @@ static const char sHelp[] =
 "      * = zero or more characters \n"
 "      ? = any character \n"
 "\n"
-"  !0eDestination Pattern:\n"
+"  !0eDestination Pattern:!0f\n"
 "     *n = Replace destination with source filename wildcard 'n', 1 is first \n"
 "          Ex:  lm *\\file-*-.*   file.*1 \n"
 "\n"
@@ -254,6 +254,13 @@ int LLMove::Run(const char* cmdOpts, int argc, const char* pDirs[])
 }
 
 // ---------------------------------------------------------------------------
+static int ignore(bool verbose, const char* msg, const lstring& path)
+{
+    if (verbose) std::cerr << msg << path << std::endl;
+    return sIgnore;
+}
+
+// ---------------------------------------------------------------------------
 int LLMove::ProcessEntry(
         const char* pDir,
         const WIN32_FIND_DATA* pFileData,
@@ -276,11 +283,14 @@ int LLMove::ProcessEntry(
     if ( !FilterDir(pDir, pFileData, depth))
         return sIgnore;
 
+    if (m_isDir && (m_onlyAttr & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
+        return sIgnore;
+
+    bool createDir = true;
     // Populate m_dstPath, replace #n and *n patterns.
     //   If pFileData is not a directory then m_dstPath only contains pDstDir part.
-    MakeDstPathEx(m_toDir, pFileData, m_pPattern);
-    if (m_isDir &&  m_onlyAttr != FILE_ATTRIBUTE_DIRECTORY)
-        return sIgnore;
+    MakeDstPathEx(m_toDir, pFileData, m_pPattern, createDir);
+
 
     BY_HANDLE_FILE_INFORMATION dstFileInfo;
     bool dstExists = LLSup::GetFileInfo(m_dstPath, dstFileInfo);
@@ -295,10 +305,10 @@ int LLMove::ProcessEntry(
 
 	if (dstExists)
 	{
-		if (m_older && dstAge >= 0)
-			return sIgnore;
-		if (!m_overWrite)
-			return sIgnore;
+        if (m_older && dstAge >= 0)
+            return ::ignore(m_verbose, "ignore downgrade (see -O and -o) ", m_dstPath);
+        if (!m_overWrite)
+            return ::ignore(m_verbose, "ignore overwrite (see -O and -o) ", m_dstPath);
 	}
 
 	bool conflict = dstExists && ( !m_force && !LLPath::IsWriteable(dstAttributes));

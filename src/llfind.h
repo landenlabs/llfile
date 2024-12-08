@@ -49,6 +49,7 @@ struct LLFindConfig  : public LLConfig
         m_colorError    = FOREGROUND_RED;
         m_colorNormal   = m_defFgColor;     // FOREGROUND_INTENSITY;
         m_colorHeader   = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+        m_refDateTime = false;
     }
 
     std::string m_dirFieldSep;
@@ -59,6 +60,7 @@ struct LLFindConfig  : public LLConfig
     WORD  m_colorError;
     WORD  m_colorNormal;
     WORD  m_colorHeader;
+    bool  m_refDateTime;
 };
 
 class LLFind : public LLBase
@@ -70,8 +72,10 @@ public:
     static int StaticRun(const char* cmdOpts, int argc, const char* pDirs[]);
     int Run(const char* cmdOpts, int argc, const char* pDirs[]);
 
+    bool            m_showRelPath;
     bool            m_force;
     std::string     m_envStr;
+    const char*     m_pCwd;
 
     WIN32_FIND_DATA m_fileData;   // Dir entry for last file found.
     LONGLONG        m_totalSize;

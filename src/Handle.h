@@ -35,7 +35,7 @@
 class Handle
 {
 public:
-    Handle() :
+    Handle() noexcept  :
         m_handle(INVALID_HANDLE_VALUE)
     { }
 
@@ -43,7 +43,7 @@ public:
         m_handle(other.Duplicate())
     { }
 
-    Handle(HANDLE handle) :
+    Handle(HANDLE handle) noexcept :
         m_handle(handle)
     { }
 
@@ -78,7 +78,7 @@ public:
     operator HANDLE() const noexcept
     { return m_handle; }
 
-    void Close()
+    void Close() noexcept
     {
         if (IsValid())
         {
@@ -88,7 +88,7 @@ public:
     }
 
 protected:
-    HANDLE Duplicate() const
+    HANDLE Duplicate() const noexcept
     {
         if (IsValid())
         {

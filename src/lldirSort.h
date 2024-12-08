@@ -99,7 +99,7 @@ class LLDirSort
 public:
     LLDirSort() : m_ourSize(0), m_count(0), m_baseDirLen(0), m_pool(),
         m_pFirst(nullptr), m_pLast(nullptr),
-        m_onlyAttr(-1),
+        m_onlyAttr((DWORD)-1),
         m_fillEntryData(nullptr),
         m_fillFindData(nullptr),
         m_values(0)

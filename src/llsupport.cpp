@@ -419,7 +419,7 @@ const char* RunExtension(std::string& exeName)
     */
 
     // Expensive - search PATH for executable.
-    char fullPath[MAX_PATH];
+    char fullPath[LL_MAX_PATH];
     static const char* s_extns[] = { NULL, ".exe", ".com", ".cmd", ".bat", ".ps" };
     for (unsigned idx = 0; idx != ARRAYSIZE(s_extns); idx++)
     {
@@ -511,7 +511,7 @@ int ReadFileList(
         0 != fopen_s(&fin, fileListName, "rt"))
         return errno;
 
-    char fileName[MAX_PATH];
+    char fileName[LL_MAX_PATH];
     BY_HANDLE_FILE_INFORMATION fileInfo;
     WIN32_FIND_DATA findData;
 
@@ -646,13 +646,15 @@ void ChangeAttributes(const lstring& srcPath, const std::set<char>& chattr) {
     for(char attrCmd : chattr) {
         switch(attrCmd) {
         case 'H':   // Set hidden
-            attributes += FILE_ATTRIBUTE_HIDDEN;
+            attributes |= FILE_ATTRIBUTE_HIDDEN;
             break;
         case 'h':   // Clear hidden
             attributes &= ~FILE_ATTRIBUTE_HIDDEN;
             break;
         }
-        SetFileAttributes(srcPath, attributes);
+        if (0 == SetFileAttributes(srcPath, attributes)) {
+            LLMsg::PresentError(GetLastError(), "Open failed,", srcPath);
+        }
    }
 }
 
@@ -1421,8 +1423,26 @@ const char* ParseOutput(const char* cmdOpts, bool tee)
 #include <shellapi.h>
 #pragma comment(lib, "shell32")
 
-int RemoveFile(const char* filePath, bool DelToRecycleBin)
+static lstring RAW_PREFIX = "\\\\?\\";
+
+int RemoveFile(const char* filePath, bool DelToRecycleBin, bool secureRemove)
 {
+    if (secureRemove) {
+        // Rename file before deleting
+        // uint pathLen = LLPath::GetPathLength(filePath);
+        lstring newPath = filePath;
+        char* name = (char*)LLPath::GetNameAndExt(newPath);
+        if (name != NULL)
+        {
+            *name = '\0';
+            char tempPath[LL_MAX_PATH];
+            tempPath[0] = '\0';
+            GetTempFileNameA(newPath, "", 0, tempPath);
+            remove(tempPath);
+            int status = rename(filePath, tempPath);
+            filePath = tempPath;
+        }
+    }
     if (DelToRecycleBin)
     {
         SHFILEOPSTRUCT fileop;
@@ -1431,11 +1451,11 @@ int RemoveFile(const char* filePath, bool DelToRecycleBin)
         fileop.fFlags = FOF_ALLOWUNDO |FOF_FILESONLY | FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
 
         int len = strlen(filePath);
-        assert(len < MAX_PATH);
-        char filePathzz[MAX_PATH];
+        assert(len < LL_MAX_PATH);
+        char filePathzz[LL_MAX_PATH];
 
         strcpy_s(filePathzz, ARRAYSIZE(filePathzz), filePath);
-        if (len+2 < MAX_PATH)
+        if (len+2 < LL_MAX_PATH)
         {
             filePathzz[len+1] = '\0';
             fileop.pFrom = filePathzz;
@@ -1453,7 +1473,17 @@ int RemoveFile(const char* filePath, bool DelToRecycleBin)
     }
     else
     {
-        return remove(filePath);
+        int error = remove(filePath);
+        if (error == -1) {
+            error = _doserrno;  // Error 123 = filename syntax error
+            // ESRCH == 3,  File is open or in use
+            lstring rawFile = RAW_PREFIX + filePath;
+            return remove(rawFile);
+        }
+
+        // rmErr = _doserrno;
+        // DWORD werr = GetLastError();
+        return error;
     }
 }
 
@@ -1469,11 +1499,11 @@ int RemoveDirectory(const char* dirPath, bool DelToRecycleBin)
         fileop.fFlags = FOF_ALLOWUNDO | FOF_NORECURSION | FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI;
 
         int len = strlen(dirPath);
-        assert(len < MAX_PATH);
-        char dirPathzz[MAX_PATH];
+        assert(len < LL_MAX_PATH);
+        char dirPathzz[LL_MAX_PATH];
 
         strcpy_s(dirPathzz, ARRAYSIZE(dirPathzz), dirPath);
-        if (len+2 < MAX_PATH)
+        if (len+2 < LL_MAX_PATH)
         {
             dirPathzz[len+1] = '\0';
             fileop.pFrom = dirPathzz;
@@ -1497,7 +1527,7 @@ int RemoveDirectory(const char* dirPath, bool DelToRecycleBin)
 bool CreateDirectories(const char* directories, int nDirs, bool doIt)
 {
     bool madeDir = false;
-    char ourDir[MAX_PATH];
+    char ourDir[LL_MAX_PATH];
     strcpy_s(ourDir, sizeof(ourDir), directories);
     DWORD error = 0;
 
@@ -1612,12 +1642,12 @@ int CopyDirTreeCb(void * pData, const char* pDir, const WIN32_FIND_DATA * pFileD
     CopyDirTreeData* pCopyData = (CopyDirTreeData*)pData;
     bool isDir = ((pFileData->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
 
-    char srcFile[MAX_PATH];
+    char srcFile[LL_MAX_PATH];
     strcpy_s(srcFile, ARRAYSIZE(srcFile), pDir);
     strcat_s(srcFile, ARRAYSIZE(srcFile), "\\");
     strcat_s(srcFile, ARRAYSIZE(srcFile), pFileData->cFileName);
 
-    char dstFile[MAX_PATH];
+    char dstFile[LL_MAX_PATH];
     strcpy_s(dstFile, ARRAYSIZE(dstFile), pCopyData->m_dstDir);
     strcat_s(dstFile, ARRAYSIZE(dstFile), srcFile + pCopyData->m_srcDirLen);
 
@@ -1756,7 +1786,7 @@ DWORD AppendFile(
 
 	hFile = CreateFile(srcFile, // open One.txt
 		GENERIC_READ,             // open for reading
-		FILE_SHARE_READ | FILE_SHARE_WRITE,   // do not share
+		FILE_SHARE_READ | FILE_SHARE_WRITE,   // allow sharing
 		NULL,                     // no security
 		OPEN_EXISTING,            // existing file only
 		FILE_ATTRIBUTE_NORMAL,    // normal file
@@ -1877,7 +1907,64 @@ DWORD CopyFollowFile(
 	return 0;
 }
 
+//-----------------------------------------------------------------------------
+// Overwrite file - used  prior to deletion to securely delete file.
+DWORD OverWriteFile(
+    const char* dstFile,
+    LPPROGRESS_ROUTINE  pProgreeCb, // nullable
+    void* pData,                    // nullable
+    BOOL* pCancel,                  // nullable
+    DWORD flags)                    // not currently used
+{
+    Handle hOverWrite;
+    DWORD  dwBytesRead, dwBytesWritten;
+    BYTE   buff[4096];
+    LARGE_INTEGER liWritten;
+    LARGE_INTEGER liZero;
+    LARGE_INTEGER liSrcSize;
+
+    liWritten.QuadPart = liZero.QuadPart = 0;
+
+    BOOL cancel;
+    if (pCancel == NULL)
+        pCancel = &cancel;
+
+    *pCancel = FALSE;
+
+    hOverWrite = CreateFile(dstFile,	 
+        GENERIC_WRITE,             // open for writing
+        FILE_SHARE_READ | FILE_SHARE_WRITE,   // do not share
+        NULL,                     // no security
+        OPEN_EXISTING,            // existing file only
+        FILE_ATTRIBUTE_NORMAL,    // normal file  TODO - get original attributes. 
+        NULL);                    // no attr. template				 
+
+    if (hOverWrite.NotValid())
+        return GetLastError();
+
+    liSrcSize.LowPart = GetFileSize(hOverWrite, (DWORD*)&liSrcSize.HighPart);
+
+    const unsigned sProgressPeriodCnt = 50;
+    unsigned progressPeriodCnt = sProgressPeriodCnt;
+    dwBytesWritten = 1;
+    while (*pCancel == FALSE && dwBytesWritten != 0 && liWritten.QuadPart < liSrcSize.QuadPart)
+    {
+        if (liWritten.QuadPart < liSrcSize.QuadPart)
+        {
+            dwBytesRead = min(liSrcSize.QuadPart - liWritten.QuadPart, sizeof(buff));
+            WriteFile(hOverWrite, buff, dwBytesRead, &dwBytesWritten, NULL);
+            liWritten.QuadPart += dwBytesWritten;
+        }
+
+        if (--progressPeriodCnt == 0 && pProgreeCb != NULL)
+        {
+            progressPeriodCnt = sProgressPeriodCnt;
+            pProgreeCb(liSrcSize, liWritten, liSrcSize, liWritten, 0, 0, NULL, hOverWrite, pData);
+        }
+    }
+    return 0;
 }
+}  // LLSup namespace
 
 // ---------------------------------------------------------------------------
 // Run process pointer, NULL if failed to start

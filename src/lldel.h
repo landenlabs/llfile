@@ -69,8 +69,11 @@ public:
     static int StaticRun(const char* cmdOpts, int argc, const char* pDirs[]);
     int Run(const char* cmdOpts, int argc, const char* pDirs[]);
 
+    LLSup::StringList m_allowedDirList; // -D=<dirPath>[,<dirPath>]...
+
     bool        m_force;
     bool        m_undo;            // true, delete moves file/folder into recycle bin.
+    bool        m_overWrite;       // -O or -o = overwrite file before deletion.
 
     uint        m_errQuitCnt;
     float       m_errSleepSec;

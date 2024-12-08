@@ -469,7 +469,7 @@ int LLReplace::Run(const char* cmdOpts, int argc, const char* pDirs[])
                 try {
                     findCnt++;
                     grepRep.m_grepLineStr = str;   
-					grepRep.m_grepLinePat = std::tr1::regex(str /* , regex_constants::ECMAScript */);
+					grepRep.m_grepLinePat = std::regex(str /* , regex_constants::ECMAScript */);
                     m_grepReplaceList.push_back(grepRep);
                     // If pattern has explict test for beginning or end of line
                     // process search/replace byLine rather then byEntireFile.
@@ -543,7 +543,7 @@ int LLReplace::Run(const char* cmdOpts, int argc, const char* pDirs[])
                     const char sepTag[] = "Seperator:";
                     const unsigned sepLen = sizeof(sepTag) - 1;
                     char userSep[] = ",";
-                    char lineBuf[MAX_PATH];
+                    char lineBuf[LL_MAX_PATH];
                     if (fgets(lineBuf, ARRAYSIZE(lineBuf), fin))
                     {
                         unsigned lineLen = strlen(lineBuf);
@@ -584,7 +584,7 @@ int LLReplace::Run(const char* cmdOpts, int argc, const char* pDirs[])
                                 }
                                 if (fields.size() > 2)
                                 {
-                                    grepRep.m_filePathPat = std::tr1::regex(fields[2], regex_constants::icase);
+                                    grepRep.m_filePathPat = std::regex(fields[2], regex_constants::icase);
                                     grepRep.m_haveFilePat = true;
                                 }
                                 m_grepReplaceList.push_back(grepRep);
@@ -670,7 +670,7 @@ int LLReplace::Run(const char* cmdOpts, int argc, const char* pDirs[])
         {
             GrepReplaceItem& grepReplaceItem = m_grepReplaceList[idx];
             grepReplaceItem.m_grepLinePat = 
-                std::tr1::regex(grepReplaceItem.m_grepLineStr, regex_constants::icase);
+                std::regex(grepReplaceItem.m_grepLineStr, regex_constants::icase);
         }
     }
 
@@ -695,7 +695,7 @@ int LLReplace::Run(const char* cmdOpts, int argc, const char* pDirs[])
         if (strcmp(m_inFile.c_str(), "-") == 0 ||
             0 == fopen_s(&fin, m_inFile.c_str(), "rt"))
         {
-            char fileName[MAX_PATH];
+            char fileName[LL_MAX_PATH];
             while (fgets(fileName, ARRAYSIZE(fileName), fin))
             {
                 TrimString(fileName);       // remove extra space or control characters.
@@ -952,11 +952,11 @@ unsigned LLReplace::FindGrep()
                 SIZE_T viewLength = INT_MAX;
                 if (mapFile.Open(m_srcPath) && (mapPtr = mapFile.MapView(0, viewLength)) != NULL)
                 {
-                    std::tr1::match_results <const char*> match;
+                    std::match_results <const char*> match;
                     const char* begPtr = (const char*)mapPtr;
                     const char* endPtr = begPtr + viewLength;
                     const char* strPtr = begPtr;
-                    std::tr1::regex grepLinePat = m_grepReplaceList[0].m_grepLinePat;
+                    std::regex grepLinePat = m_grepReplaceList[0].m_grepLinePat;
 
 					if (binaryState.isBinary(strPtr, min(strPtr+256, endPtr)))
 					{
@@ -965,7 +965,7 @@ unsigned LLReplace::FindGrep()
 						return matchCnt;
 					}
             
-                    while (std::tr1::regex_search(strPtr, endPtr, match, grepLinePat, flags))
+                    while (std::regex_search(strPtr, endPtr, match, grepLinePat, flags))
                     {
                         matchCnt++;
                         const char* begLine = match.prefix().second;
@@ -989,7 +989,7 @@ unsigned LLReplace::FindGrep()
                                     LLMsg::Out() << match.str();
                                     ResetGrepColor();
                                     begLine = strPtr = match.suffix().first; 
-                                } while (std::tr1::regex_search(strPtr, endLine, match, grepLinePat, flags));
+                                } while (std::regex_search(strPtr, endLine, match, grepLinePat, flags));
                                 std::string suffix = std::string(match.suffix().first, endLine);
                                 LLMsg::Out() << suffix << std::endl;
                             }
@@ -1034,7 +1034,7 @@ unsigned LLReplace::FindGrep(std::istream& in)
 {
     unsigned matchCnt = 0;
     unsigned lineCnt = 0;
-    std::tr1::smatch match;
+    std::smatch match;
     std::regex_constants::match_flag_type flags = std::regex_constants::match_default;
 	std::vector<string> beforeLines(m_grepOpt.beforeCnt);
 	
@@ -1058,7 +1058,7 @@ unsigned LLReplace::FindGrep(std::istream& in)
         // All patterns have to match for the line to match.
         ColorMap  colorMap;
         unsigned itemMatchCnt = 0;
-        std::tr1::regex grepLinePat;
+        std::regex grepLinePat;
         for (unsigned patIdx = 0; patIdx != m_grepReplaceList.size(); patIdx++)
         {
             GrepReplaceItem& grepRepItem = m_grepReplaceList[patIdx];
@@ -1078,7 +1078,7 @@ unsigned LLReplace::FindGrep(std::istream& in)
                         std::advance(begIter, off);
 						 
                         if (begIter < endIter && 
-                            std::tr1::regex_search(begIter, endIter, match, grepLinePat, flags|std::regex_constants::format_first_only))
+                            std::regex_search(begIter, endIter, match, grepLinePat, flags|std::regex_constants::format_first_only))
                         {
 							std::string subStr = str.substr(off);
 							std::string newStr = std::regex_replace(subStr, grepLinePat, replaceStr, flags|std::regex_constants::format_first_only);
@@ -1111,7 +1111,7 @@ unsigned LLReplace::FindGrep(std::istream& in)
                     std::string::const_iterator endIter = str.end();
                     size_t off = 0;
                     while (off < str.length() && 
-                        std::tr1::regex_search(begIter, endIter, match, grepLinePat, flags))
+                        std::regex_search(begIter, endIter, match, grepLinePat, flags))
                     {
                         itemMatches = true;
                         colorMap[uint(match.position() + off)] = ColorInfo((uint)match.length(), MATCH_COLORS[patIdx % ARRAYSIZE(MATCH_COLORS)]);
@@ -1122,7 +1122,7 @@ unsigned LLReplace::FindGrep(std::istream& in)
                 else
                 {
                     // Reverse match
-                    if (std::tr1::regex_search(str, match, grepLinePat, flags) == false)
+                    if (std::regex_search(str, match, grepLinePat, flags) == false)
                     {
                         itemMatches = true;
                         if (m_grepReplaceList.size() == 1)
@@ -1208,12 +1208,12 @@ unsigned LLReplace::FindGrep(std::istream& in)
 // ---------------------------------------------------------------------------
 void LLReplace::EnableFiltersForFile(const std::string& filePath)
 {
-    std::tr1::smatch match;
+    std::smatch match;
     std::regex_constants::match_flag_type flags = std::regex_constants::match_default;
     for (unsigned patIdx = 0; patIdx != m_grepReplaceList.size(); patIdx++)
     {
         GrepReplaceItem& item = m_grepReplaceList[patIdx];
-        item.m_enabled = !item.m_haveFilePat || std::tr1::regex_match(filePath, match, item.m_filePathPat, flags);
+        item.m_enabled = !item.m_haveFilePat || std::regex_match(filePath, match, item.m_filePathPat, flags);
     }
 }
 
@@ -1286,7 +1286,7 @@ unsigned LLReplace::FindReplace(const WIN32_FIND_DATA* pFileData)
                 EnableFiltersForFile(m_srcPath);
 
                 // ----- Find and Replace by line -----
-                std::tr1::smatch match;
+                std::smatch match;
                 std::ifstream in(m_srcPath, inMode, _SH_DENYNO);
                 std::ofstream out;
                 std::streampos inPos = in.tellg();
@@ -1301,8 +1301,8 @@ unsigned LLReplace::FindReplace(const WIN32_FIND_DATA* pFileData)
                         {
                             if (m_grepReplaceList[patIdx].m_enabled)
                             {
-                                std::tr1::regex grepLinePat = m_grepReplaceList[patIdx].m_grepLinePat;
-                                if (std::tr1::regex_search(str, match, grepLinePat, flags))
+                                std::regex grepLinePat = m_grepReplaceList[patIdx].m_grepLinePat;
+                                if (std::regex_search(str, match, grepLinePat, flags))
                                 {
                                     std::string replaceStr = m_grepReplaceList[patIdx].m_replaceStr;
 
@@ -1363,14 +1363,14 @@ unsigned LLReplace::FindReplace(const WIN32_FIND_DATA* pFileData)
 					SIZE_T viewLength = INT_MAX;
 					if (mapFile.Open(m_srcPath) && (mapPtr = mapFile.MapView(0, viewLength)) != NULL)
 					{
-						std::tr1::match_results <const char*> match;
+						std::match_results <const char*> match;
 						const char* begPtr = (const char*)mapPtr;
 						const char* endPtr = begPtr + viewLength;
 						const char* strPtr = begPtr;
-						std::tr1::regex grepLinePat = m_grepReplaceList[0].m_grepLinePat;
+						std::regex grepLinePat = m_grepReplaceList[0].m_grepLinePat;
 						std::string replaceStr = m_grepReplaceList[0].m_replaceStr;
 
-						if (std::tr1::regex_search(strPtr, endPtr, match, grepLinePat, flags))
+						if (std::regex_search(strPtr, endPtr, match, grepLinePat, flags))
 						{
 							matchCnt++;
 							didReplace = true;

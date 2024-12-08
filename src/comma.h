@@ -33,6 +33,14 @@
 
 #include <locale>
 
+/*
+     std::ostringstream outStream;
+
+     // Enable comma formatting of numbers.
+     char sep = ',';
+     int group = 3;
+     outStream.imbue(std::locale(std::locale(), new numfmt<char>(sep, group)));
+*/
 template <typename Ch>
 class numfmt: public std::numpunct<Ch>
 {

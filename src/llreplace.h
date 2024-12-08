@@ -104,9 +104,9 @@ protected:
         GrepReplaceItem() : m_haveFilePat(false), m_enabled(true), m_onMatch(true), m_replace(false) {}
 
         std::string         m_grepLineStr;
-        std::tr1::regex     m_grepLinePat;      // -G=<grepPattern>
+        std::regex          m_grepLinePat;      // -G=<grepPattern>
         std::string         m_replaceStr;       // -R=<replacePattern>
-        std::tr1::regex     m_filePathPat;      // -M
+        std::regex          m_filePathPat;      // -M
 		std::string         m_beforeStr;		// -Rbefore=<pattern>
 		std::string         m_afterStr;         // -Rafter=<pattern>
         bool                m_haveFilePat;

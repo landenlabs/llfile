@@ -33,6 +33,7 @@
 #include "lldel.h"
 #include "Security.h"
 
+
 // ---------------------------------------------------------------------------
 
 static const char sHelp[] =
@@ -44,12 +45,14 @@ static const char sHelp[] =
 "  !0eWhere switches are:!0f\n"
 "   -A=[nrhs]           ; Limit files by attribute (n=normal r=readonly, h=hidden, s=system)\n"
 "   -D                  ; Del directories only\n"
+"   -D=<dirPat>[,...]   ; Only matching directories, see -P for path regEx\n"
 "   -F                  ; Del files only\n"
 "   -F=<filePat>,...    ; Limit to matching file patterns \n"
 "   -f                  ; Force delete even if destination is set to read only\n"
 "   -I=<infile>         ; Read filenames from infile or stdin if -\n"
 "   -j                  ; Follow junctions (default: skip junctions)\n"
 "   -n                  ; No delete, just echo command\n"
+"   -o or -O            ; Over write file before deletion for security\n"
 "   -p                  ; Prompt before delete\n"
 "   -q                  ; Quiet, don't echo command (echo on by default)\n"
 "   -r                  ; Recurse starting at from directory, matching file pattern\n"
@@ -57,6 +60,8 @@ static const char sHelp[] =
 "   -t[acm]             ; show Time a=access, c=creation, m=modified, n=none\n"
 "   -u                  ; Enable undo, delete files and directories by moving to recycle bin\n"
 "   -P=<srcPathPat>     ; Optional regular expression pattern on source files full path\n"
+"                           Ex delete all 'build' directories\n"
+"                           lr  -P=.*\\\\build\\\\.* -r . \n"
 "   -Q=n                ; Quit after 'n' retries if error\n"
 "   -T[acm]<op><value>  ; Test Time a=access, c=creation, m=modified\n"
 "                       ; op=(Greater|Less|Equal)  Value= now|+/-hours|yyyy:mm:dd:hh:mm:ss \n"
@@ -79,8 +84,8 @@ static const char sHelp[] =
 "       -rfq .\\foo-*\\   ; Recursively, forcefully quietly remove all files \n"
 "                       ; and directories which start in a directory that \n"
 "                       ; starts with foo- \n"
-"       -rfq .\\foo-*    ; Similar but search ALL directories at current level \n"
-"                       ; for files or directories which start with foo- \n"
+"       -rfq .\\foo-*    ; Similar delete all directories at current level \n"
+"                       ; and their files or which start with foo- \n"
 "\n"
 "  !0ePattern:!0f\n"
 "      * = zero or more characters\n"
@@ -95,6 +100,7 @@ LLDelConfig LLDel::sConfig;
 LLDel::LLDel() :
     m_force(false),
     m_undo(false),      // true, delete moves file/folder into recycle bin.
+    m_overWrite(false),
     m_errQuitCnt(0),
     m_errSleepSec(0)
 {
@@ -111,7 +117,7 @@ LLDel::LLDel() :
 }
         
 // ---------------------------------------------------------------------------
-LLConfig& LLDel::GetConfig() 
+LLConfig& LLDel::GetConfig()  
 {
     return sConfig;
 }
@@ -183,6 +189,11 @@ int LLDel::Run(const char* cmdOpts, int argc, const char* pDirs[])
             }
             break;
 
+        case 'o':
+        case 'O':
+            m_overWrite = true;
+            break;
+
         case 'u':
             m_undo = true;
             break;
@@ -197,7 +208,6 @@ int LLDel::Run(const char* cmdOpts, int argc, const char* pDirs[])
         // Advance to next parameter
         LLSup::AdvCmd(cmdOpts);
     }
-
 
     if (m_force && !LLSec::IsElevated())
     {
@@ -241,6 +251,58 @@ int LLDel::Run(const char* cmdOpts, int argc, const char* pDirs[])
 	return ExitStatus((int)m_countOutFiles);
 }
 
+// https://devblogs.microsoft.com/oldnewthing/20120217-00/?p=8283
+
+
+// #include <windows.h>
+// #include <restartmanager.h>
+
+// Rstrtmgr.lib
+
+
+static int reportProcessOpenFile(const char* filePath) {
+/* 
+    DWORD sessionHandle = 0;
+
+    // Create a Restart Manager session
+    DWORD dwReason;
+
+    if (RmStartSession(&sessionHandle, 0, NULL) != ERROR_SUCCESS) {
+        std::cerr << "Failed to start Restart Manager session." << std::endl;
+        return 1;
+    }
+
+    // Register the file with the session
+    PCWSTR pszFile = L"C:\\path\\to\\your\\file.txt";
+    // pszFile = filePath.c_str();
+    if (RmRegisterResources(sessionHandle, 1, &pszFile, 0, NULL, 0, NULL) != ERROR_SUCCESS) {
+        std::cerr << "Failed to register resource." << std::endl;
+        RmEndSession(sessionHandle);
+        return 1;
+    }
+
+    UINT nProcInfoNeeded = 0;
+    RM_PROCESS_INFO rmUniqueProcess[10];
+    UINT nProcesses = 10;
+
+    // Get the processes that have the file open
+    if (RmGetList(sessionHandle, &nProcInfoNeeded, &nProcesses, rmUniqueProcess, &dwReason) != ERROR_SUCCESS) {
+        std::cerr << "Failed to get process list." << std::endl;
+        RmEndSession(sessionHandle);
+        return 1;
+    }
+
+    // Print the process IDs
+    for (UINT i = 0; i < nProcesses; i++) {
+        std::cout << "Process id=" << rmUniqueProcess[i].Process.dwProcessId << " Name:" << rmUniqueProcess[i].strAppName << std::endl;
+    }
+
+    // Close the session
+    RmEndSession(sessionHandle);
+*/
+    return 0;
+}
+
 // ---------------------------------------------------------------------------
 int LLDel::ProcessEntry(
         const char* pDir,
@@ -252,8 +314,10 @@ int LLDel::ProcessEntry(
     //  Filter on:
     //      m_onlyAttr      File or Directory, -F or -D
     //      m_onlyRhs       Attributes, -A=rhs
-    //      m_includeList   File patterns,  -F=<filePat>[,<filePat>]...
-    //      m_onlySize      File size, -Z op=(Greater|Less|Equal) value=num<units G|M|K>, ex -Zg100M
+    //      m_includeDirList    Directories     -D=<dirPat>[,<dirPat>]....
+    //      m_includeList       File patterns,  -F=<filePat>[,<filePat>]...
+    //      m_grepSrcPathPat    Path pattern    -P=<pathPattern>
+    //      m_onlySize          File size,      -Z op=(Greater|Less|Equal) value=num<units G|M|K>, ex -Zg100M
     //      m_excludeList   Exclude path patterns, -X=<pathPat>[,<pathPat>]...
     //      m_timeOp        Time, -T[acm]<op><value>  ; Test Time a=access, c=creation, m=modified\n
     //
@@ -353,7 +417,7 @@ int LLDel::ProcessEntry(
                         {
                             if (m_echo)
                             {
-                                char errBuf[MAX_PATH];
+                                char errBuf[LL_MAX_PATH];
                                 strerror_s(errBuf, sizeof(errBuf), errno);
                                 SetColor(LLDel::sConfig.m_colorError);
                                 ErrorMsg() << " rmdir " << " error " << errBuf << " on " << m_srcPath << std::endl;
@@ -371,15 +435,27 @@ int LLDel::ProcessEntry(
             }
             else
             {
-                if ((rmErr = LLSup::RemoveFile(m_srcPath, m_undo)) == -1)
+                if (m_overWrite)
+                    LLSup::OverWriteFile(m_srcPath);    // Destroy file before deletion.
+
+                if ((rmErr = LLSup::RemoveFile(m_srcPath, m_undo, m_overWrite)) != 0)
                 {
                     rmErr = _doserrno;
                     DWORD werr = GetLastError();
 
-                    if (rmErr == EIO)
+                    if (rmErr = ESRCH)
+                    {
+                        reportProcessOpenFile(m_srcPath);
+                    }
+                    else if (rmErr == EIO)
                     {
                         LLSec::TakeOwnership(m_srcPath);
-                        rmErr = LLSup::RemoveFile(m_srcPath, m_undo);
+                        rmErr = LLSup::RemoveFile(m_srcPath, m_undo, m_overWrite);
+                    } 
+                    else if (rmErr == 123) 
+                    {
+                        m_srcPath = LLPath::Join(pDir, pFileData->cAlternateFileName);
+                        rmErr = LLSup::RemoveFile(m_srcPath, m_undo, m_overWrite);
                     }
 
                     if (rmErr != 0)
@@ -388,17 +464,20 @@ int LLDel::ProcessEntry(
                         {
                             std::string errmsg =LLMsg::GetErrorMsg(GetLastError());
 
-                            char errBuf[MAX_PATH];
+                            char errBuf[LL_MAX_PATH];
                             strerror_s(errBuf, sizeof(errBuf), _doserrno);
                             SetColor(LLDel::sConfig.m_colorError);
-                            ErrorMsg() << " del " << " error " << errBuf << " " << errmsg << " on " << m_srcPath << std::endl;
+                            if (rmErr == ESRCH)
+                                ErrorMsg() << " del " << " file open or in use on " << m_srcPath << std::endl;
+                            else 
+                                ErrorMsg() << " del " << " error " << errBuf << " " << errmsg << " on " << m_srcPath << std::endl;
                             SetColor(LLDel::sConfig.m_colorNormal);
                         }
 
                         for (DWORD tryCnt = m_errQuitCnt; rmErr == EACCES && tryCnt > 0; tryCnt--)
                         {
                             Sleep(DWORD(m_errSleepSec * 1000));
-                            rmErr = LLSup::RemoveFile(m_srcPath, m_undo);
+                            rmErr = LLSup::RemoveFile(m_srcPath, m_undo, m_overWrite);
                         }
 
                         if (rmErr != 0)

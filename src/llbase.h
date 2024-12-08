@@ -55,7 +55,7 @@ public:
     WORD m_defBgColor;
     bool m_colorOn;
 
-    LLConfig()
+    LLConfig() noexcept
     {
         CONSOLE_SCREEN_BUFFER_INFO consoleScreenBufferInfo;
         GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &consoleScreenBufferInfo);
@@ -78,7 +78,7 @@ public:
 class LLBase
 {
 public:
-    LLBase() :
+    LLBase() noexcept  :
         m_isDir(false),
         m_fileSize(0),
         m_onlyAttr(0x000FFFFF),     // show only specific file,directory,... types (def: ALL)
@@ -128,7 +128,7 @@ public:
 
     static const char s_ignoreActionMsg[];
 
-    DWORD StartTick() const
+    DWORD StartTick() const noexcept
     { return m_startTick; }
 
     // Parse base commands, return false is unknown command.
@@ -144,15 +144,16 @@ public:
     {
         LLBase* pBase = (LLBase*)cbData;
         assert(pBase != nullptr);
-        return pBase->ProcessEntry(pDir, pFileData, depth);
+        return  pBase->ProcessEntry(pDir, pFileData, depth);
     }
 
     // Common pre-filter, called by client ProcessEntry
     //  Filter on:
     //      m_onlyAttr      File or Directory, -F or -D
     //      m_onlyRhs       Attributes, -A=rhs
-    //      m_includeList   File patterns,  -F=<filePat>[,<filePat>]...
-    //      m_onlySize      File size, -Z op=(Greater|Less|Equal) value=num<units G|M|K>, ex -Zg100M
+    //      m_includeDirList    Directories     -D=<dirPat>[,<dirPat>]....
+    //      m_includeList       File patterns,  -F=<filePat>[,<filePat>]...
+    //      m_onlySize          File size,      -Z op=(Greater|Less|Equal) value=num<units G|M|K>, ex -Zg100M
     //      m_excludeList   Exclude path patterns, -X=<pathPat>[,<pathPat>]...
     //      m_timeOp        Time, -T[acm]<op><value>  ; Test Time a=access, c=creation, m=modified\n
     //
@@ -160,7 +161,7 @@ public:
     bool FilterDir(const char* pDir, const WIN32_FIND_DATA* pFileData, int depth);
 
     // Increment m_countOut and return true if execeeded output limit.
-    bool IsQuit()
+    bool IsQuit() noexcept
     {
         if (++m_countOut >= m_limitOut && m_limitOut != 0)
         {
@@ -180,7 +181,7 @@ public:
     // Populate m_dstPath, replace #n and *n patterns.
     //   If pFileData is not a directory then m_dstPath only contains pDstDir part.
     void MakeDstPath(const char* pDstDir, const WIN32_FIND_DATA* pFileData, const char* pPattern);
-    void MakeDstPathEx(const char* pDstDir, const WIN32_FIND_DATA* pFileData, const char* pPattern);
+    bool MakeDstPathEx(const char* pDstDir, const WIN32_FIND_DATA* pFileData, const char* pPattern, bool createDirs = true);
 
     // Return true if  no grep specified or grep found a match.
     bool FilterGrep();
@@ -196,25 +197,25 @@ public:
     ULONGLONG           m_fileSize;
 
     // Filter settings
-    DWORD               m_onlyAttr;         // -F or -D, limit to specific file,directory,... types (def: ALL)
-    DWORD               m_onlyRhs;          // -A=[nrhs], limit to specific attribute (ReadOnly, Hidden, System, def:ALL)
+    DWORD               m_onlyAttr;             // -F or -D, limit to specific file,directory,... types (def: ALL)
+    DWORD               m_onlyRhs;              // -A=[nrhs], limit to specific attribute (ReadOnly, Hidden, System, def:ALL)
 
-    LONGLONG            m_onlySize;         // -Z<op><value>
-    LLSup::SizeOp       m_onlySizeOp;       //    op=(Greater|Less|Equal) value=num<units G|M|K>, ex -Zg100M
+    LONGLONG            m_onlySize;             // -Z<op><value>
+    LLSup::SizeOp       m_onlySizeOp;           //    op=(Greater|Less|Equal) value=num<units G|M|K>, ex -Zg100M
 
-    LLSup::StringList   m_excludeList;      // -X<pathPat>[,<pathPat>
+    LLSup::StringList   m_excludeList;          // -X<pathPat>[,<pathPat>
     LLSup::StringList   m_includeFileList;      // -F[<filePat>][,<filePat>]
-	LLSup::StringList   m_includeDirList;      // -D[<dirPat>][,<dirPat>]
+	LLSup::StringList   m_includeDirList;       // -D[<dirPat>][,<dirPat>]
 
     // Example  -TmcEnow        Select if modify or create time Equal to now\n"
     //          -TmG-4.5        Select if modify time Greater than 4.5 hours ago\n"
     //          -TaL04:00:00    Select if access time Less than 4am today\n"
-    LLSup::TimeFields   m_testTimeFields;   // -T[acm]<op><value>  ; Test Time a=access, c=creation, m=modified
-    LLSup::SizeOp       m_timeOp;           //   op=(Greater|Less|Equal)  Value= now|+/-hours|yyyy:mm:dd:hh:mm:ss
-    FILETIME            m_testTime;         //   Value time parts significant from right to left, so mm:ss or hh:mm:ss, etc
+    LLSup::TimeFields   m_testTimeFields;       // -T[acm]<op><value>  ; Test Time a=access, c=creation, m=modified
+    LLSup::SizeOp       m_timeOp;               //   op=(Greater|Less|Equal)  Value= now|+/-hours|yyyy:mm:dd:hh:mm:ss
+    FILETIME            m_testTime;             //   Value time parts significant from right to left, so mm:ss or hh:mm:ss, etc
 
-    lstring             m_separators;       // -B=<sep>...   Add additional field separators to use with #n selection
-    std::string         m_inFile;           // -I=<inListOfFiles> or -I=-
+    lstring             m_separators;           // -B=<sep>...   Add additional field separators to use with #n selection
+    std::string         m_inFile;               // -I=<inListOfFiles> or -I=-
 
     DirectoryScan       m_dirScan;
     LLDirSort           m_dirSort;
@@ -248,13 +249,13 @@ public:
     bool                m_byLine;           // true if grep pattern contains ^ or $
     bool                m_backRef;
 
-    std::tr1::regex     m_grepSrcPathPat;   // -P=<filePattern>
-    std::tr1::regex     m_grepLinePat;      // -G=<fileContentPattern>
+    std::regex          m_grepSrcPathPat;   // -P=<filePattern>
+    std::regex          m_grepLinePat;      // -G=<fileContentPattern>
     std::string         m_grepLineStr;
 
     struct GrepOpt
     {
-        GrepOpt() : 
+        GrepOpt() noexcept :
             lineCnt(INT_MAX), matchCnt(INT_MAX), 
             beforeCnt(0), afterCnt(0)
         { 

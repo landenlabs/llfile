@@ -29,11 +29,12 @@
 //-----------------------------------------------------------------------------
 
 #include <iostream>
+#include <algorithm>
 
 #include "dirscan.h"
 #include "llmsg.h"
 // #include "llsupport.h"
-// #include "llpath.h"
+#include "llpath.h"
 
 #pragma warning(disable : 4706) // assignment within conditional expression
 
@@ -173,8 +174,10 @@ bool WildCompare(
                 }
                 patInfoLst.resize(lstSz+1);
 
-                if (rawStr[patInfo.rawOff])
+                if (rawStr[patInfo.rawOff]) {
                     ++patInfo.rawOff;
+                    ++patInfo.rawLen;
+                }
             } while (rawStr[patInfo.rawOff]);
 
             patInfoLst.resize(lstSz);
@@ -365,6 +368,15 @@ size_t DirectoryScan::GetFilesInDirectory2(int depth)
                 ++fileCnt;
                 if (m_fileFilter.empty() || PatternMatch(m_fileFilter, FileData.cFileName))
                 {
+#if 0
+                    // Try and get alternate short name for files with restricted characters. 
+                    // Did not work !
+                    char filePath[LL_MAX_PATH];
+                    sprintf_s(filePath, ARRAYSIZE(filePath), "%s\\%s", m_dir, FileData.cFileName);
+                    int shortLen = GetShortPathName(filePath, NULL, 0);
+                    char shortPath[LL_MAX_PATH];
+                    shortLen = GetShortPathName(filePath, shortPath, shortLen);
+#endif
                     if (m_add_cb && depth >= (int)m_dirFilters.size())
                         m_add_cb(m_cb_data, m_dir, &FileData, depth);
                 }
@@ -386,7 +398,7 @@ size_t DirectoryScan::GetFilesInDirectory2(int depth)
     if (m_entryType != eFile)
     {
         // Set attribute for end-of-directory
-        FileData.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
+        FileData.dwFileAttributes = GetFileAttributes(m_dir);  
         FileData.cFileName[0] = '\0';
         int dirDepth = -1 - depth;
 
@@ -408,7 +420,7 @@ void DirectoryScan::Init(
     bool appendSlash)
 {
     // Get current directory as default starting point.
-    char currentDir[MAX_PATH];
+    char currentDir[LL_MAX_PATH];
     if (pCwd == NULL)
     {
 #if 1
@@ -430,6 +442,9 @@ void DirectoryScan::Init(
 
     // Make local copy of input pattern
     m_pathPat = pPathPat;
+
+    // Clean any unix paths into windows/dos paths
+    std::replace(m_pathPat.begin(), m_pathPat.end(), '/', sDirChr);
 
     if (appendSlash && m_pathPat.back() != sDirChr)
     {
@@ -459,7 +474,9 @@ void DirectoryScan::Init(
     //  --------------  -----------------   --------------- ----------  -------
     //                  none                *               .\          0
     //   *              none                *               .\          0
+    //   *f00           none                *foo            .\          0
     //  d2\             none                *               d2\         1
+    //  *d2\            none                *               *d2\        1
     //  \d2\            none                *               \d2         2
     //  \d1\d2\d3*\*    d3*                 *               \d1\d2
     //  \d1\d2*\d3*\A*  d2*,d3*             A*              \d1
@@ -504,9 +521,9 @@ void DirectoryScan::Init(
 
 bool DirectoryScan::IsSameFile(const char* path1, const char* path2)
 {
-    char fullPath1[MAX_PATH];
+    char fullPath1[LL_MAX_PATH];
     DWORD len1 = GetFullPathName(path1, ARRAYSIZE(fullPath1), fullPath1, NULL);
-    char fullPath2[MAX_PATH];
+    char fullPath2[LL_MAX_PATH];
     DWORD len2 = GetFullPathName(path2, ARRAYSIZE(fullPath2), fullPath2, NULL);
 
     if (len1 == 0 || len2 == 0)
@@ -523,7 +540,7 @@ bool DirectoryScan::IsSameFile(const char* path1, const char* path2)
 //=================================================================================================
 std::string DirectoryScan::GetFullPath(const char* path)
 {
-    char fullPath[MAX_PATH];
+    char fullPath[LL_MAX_PATH];
     DWORD len = GetFullPathName(path, ARRAYSIZE(fullPath), fullPath, NULL);
     if (len != 0)
         return std::string(fullPath);

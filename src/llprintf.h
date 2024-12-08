@@ -55,7 +55,7 @@ public:
     lstring         m_printFmt;
     lstring         m_timeFmt;
     lstring         m_pushArgs;
-    std::tr1::regex m_regex;
+    std::regex m_regex;
 
     WORD            m_defColor;
 
