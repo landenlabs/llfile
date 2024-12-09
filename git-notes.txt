@@ -1,0 +1,7 @@
+# lldupdir
+git init
+git remote add origin https://landenlabs@github.com/landenlabs/llfile.git
+
+git add .
+git commit -m "first commit"
+git push --set-upstream origin main
