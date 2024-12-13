@@ -312,11 +312,23 @@ int LLMove::ProcessEntry(
     bool createDir = true;
     // Populate m_dstPath, replace #n and *n patterns.
     //   If pFileData is not a directory then m_dstPath only contains pDstDir part.
-    MakeDstPathEx(m_toDir, pFileData, m_pPattern, createDir);
+    if (!MakeDstPathEx(m_toDir, pFileData, m_pPattern, createDir)) {
+        DWORD error = GetLastError();
+        if (error != 183) { // file exit
+            ErrorMsg() << "Failed to create directory:("
+                << error
+                << ") " << LLMsg::GetErrorMsg(error)
+                << " " << m_dstPath
+                << std::endl;
+
+            m_countError++;
+        }
+    }
 
     BY_HANDLE_FILE_INFORMATION dstFileInfo;
     bool dstExists = LLSup::GetFileInfo(m_dstPath, dstFileInfo);
     DWORD dstAttributes = dstFileInfo.dwFileAttributes;
+
 
     if (m_isDir && !m_dirScan.m_recurse) {
         // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexa
@@ -326,14 +338,30 @@ int LLMove::ProcessEntry(
         //
         // When moving a directory, the destination must be on the same drive.
 
-        BY_HANDLE_FILE_INFORMATION srcFileInfo;
-        bool srcExists = LLSup::GetFileInfo(m_srcPath, srcFileInfo);
-        if (srcFileInfo.dwVolumeSerialNumber != dstFileInfo.dwVolumeSerialNumber) {
-            SetColor(FOREGROUND_RED); // TODO - add error color to LLMove::sConfig.m_colorError
-            ErrorMsg() << "Directories cannot be moved across file systems. Use copy instead\n";
-            SetColor(LLMove::sConfig.m_colorNormal);
-            ErrorMsg() << "\t" << m_dstPath << std::endl;
-            return sError;
+        unsigned dirPos = m_dstPath.rfind(LLPath::sDirChr());
+        if (dirPos > 1 && m_dstPath[dirPos-1] != ':') {
+            lstring dstDir = m_dstPath.substr(0, dirPos);
+            BY_HANDLE_FILE_INFORMATION dstDirInfo;
+            bool dstDirExists = LLSup::GetFileInfo(dstDir, dstDirInfo);
+            if (!dstDirExists) {
+                SetColor(FOREGROUND_RED); // TODO - add error color to LLMove::sConfig.m_colorError
+                ErrorMsg() << "Destination directory does not exist\n";
+                SetColor(LLMove::sConfig.m_colorNormal);
+                ErrorMsg() << "\t" << m_toDir << std::endl;
+                m_countError++;
+                return sError;
+            }
+
+            BY_HANDLE_FILE_INFORMATION srcFileInfo;
+            bool srcExists = LLSup::GetFileInfo(m_srcPath, srcFileInfo);
+            if (srcFileInfo.dwVolumeSerialNumber != dstDirInfo.dwVolumeSerialNumber) {
+                SetColor(FOREGROUND_RED); // TODO - add error color to LLMove::sConfig.m_colorError
+                ErrorMsg() << "Directories cannot be moved across file systems. Use copy instead\n";
+                SetColor(LLMove::sConfig.m_colorNormal);
+                ErrorMsg() << "\t" << m_dstPath << std::endl;
+                m_countError++;
+                return sError;
+            }
         }
     }
 

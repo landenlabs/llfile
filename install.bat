@@ -1,8 +1,10 @@
 @echo off
 
 @rem TODO - use drive env in script below
- 
+
+set prog=llfile
 set bindir=d:\opt\bin2
+
 set devenv="C:\PROGRA~1\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.com"
 set devenv=F:\opt\VisualStudio\2022\Preview\Common7\IDE\devenv.exe 
 set msbuild=F:\opt\VisualStudio\2022\Preview\MSBuild\Current\Bin\MSBuild.exe
