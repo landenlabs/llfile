@@ -69,7 +69,7 @@ static bool WildCompare(const char* wildStr, int wildOff, const char* rawStr, in
     while (wildStr[wildOff])
     {
         if (rawStr[rawOff] == EOS)
-            return (wildStr[wildOff] == '*');
+            return (wildStr[wildOff] == '*' && wildStr[wildOff+1] == EOS);
 
         if (wildStr[wildOff] == '*')
         {
@@ -90,7 +90,7 @@ static bool WildCompare(const char* wildStr, int wildOff, const char* rawStr, in
             } while (rawStr[rawOff]);
 
             if (rawStr[rawOff] == EOS)
-                return (wildStr[wildOff+1] == '*');
+                return (wildStr[wildOff+1] == '*' && wildStr[wildOff + 2] == EOS );
         }
         else if (wildStr[wildOff] == '?')
         {
