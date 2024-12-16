@@ -4,7 +4,7 @@
 // Project: LLFile
 //
 // Author: Dennis Lang - 2015
-// http://home.comcast.net/~lang.dennis/
+// https://lanenlabs.com
 //
 // This file is part of LLFile project.
 //
