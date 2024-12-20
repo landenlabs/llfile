@@ -335,9 +335,7 @@ size_t DirectoryScan::GetFilesInDirectory2(int depth)
                 continue;
             }
 
-            // Bad if
-            //     cFileName[0] == '.' && cFilename[1] == '\0'
-            // or  cFilename[0] == '.' && cFilename[1] == '.' && cFilename[2] == '\0'
+            // Skip if  "." or ".."
             if (m_entryType != eFile 
                 && !(FileData.cFileName[0] == '.' && FileData.cFileName[1] == '\0')
                 && !(FileData.cFileName[0] == '.' && FileData.cFileName[1] == '.' && FileData.cFileName[2] == '\0'))
