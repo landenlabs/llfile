@@ -199,6 +199,9 @@ bool LLBase::FilterDir(
     m_srcPath = LLPath::Join(pDir, pFileData->cFileName);
     m_isDir   = ((pFileData->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
 
+    if (LLSup::PatternListMatches(m_excludeList, m_srcPath))   // Added 25-dec-2024
+        return false;
+
     if (m_isDir)
     {
         m_countInDir++;
