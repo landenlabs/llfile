@@ -65,13 +65,16 @@ public:
     void Init(const char* pFromFiles, const char* pCwd, bool appendStar = true);
     size_t GetFilesInDirectory(int depth=0);
     size_t GetFilesInDirectory2(int depth=0);
+    
+    // Convert MB dir name to Wide char, return nullptr if fails.
+    static WCHAR* getFullName_W(const char* dirPath, size_t dirLen, const WIN32_FIND_DATA* FileData, WCHAR* dstW, size_t dstSizeW);
+
 
     // If m_fileFirst true, then process only files in first pass, directories only
     // in 2nd pass, else both in one pass.
     bool        m_filesFirst;
     enum  EntryType { eFilesDir, eFile, eDir };
     EntryType   m_entryType;
-
 
     char        m_dir[LL_MAX_PATH];
     std::string m_fileFilter;

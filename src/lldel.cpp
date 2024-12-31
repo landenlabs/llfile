@@ -464,17 +464,29 @@ int LLDel::ProcessEntry(
 
                     if (rmErr != 0)
                     {
+                        WCHAR wBuf[LL_MAX_PATH];
+                        WCHAR* wPath = DirectoryScan::getFullName_W(pDir, strlen(pDir), pFileData, wBuf, ARRAYSIZE(wBuf));
+
                         if (m_echo)
                         {
-                            std::string errmsg =LLMsg::GetErrorMsg(GetLastError());
+                            std::string errmsg = LLMsg::GetErrorMsg(GetLastError());
 
                             char errBuf[LL_MAX_PATH];
                             strerror_s(errBuf, sizeof(errBuf), _doserrno);
                             SetColor(LLDel::sConfig.m_colorError);
-                            if (rmErr == ESRCH)
-                                ErrorMsg() << " del error - File open or in use on " << m_srcPath << std::endl;
-                            else 
+                            if (rmErr == ESRCH) {
+                                if (wPath != nullptr) {
+                                    errno = 0;
+                                    rmErr = _wremove(wPath);
+                                    if (rmErr == -1)
+                                        rmErr = errno;
+                                } 
+                                if (rmErr != 0)
+                                    ErrorMsg() << " del error - File open or in use on " << m_srcPath << std::endl;
+                            } 
+                            else
                                 ErrorMsg() << " del error - " << errBuf << " " << errmsg << " on " << m_srcPath << std::endl;
+
                             SetColor(LLDel::sConfig.m_colorNormal);
                         }
 

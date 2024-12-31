@@ -1,18 +1,19 @@
-@echo off
+@echo on
 
 @rem TODO - use drive env in script below
 
 set prog=llfile
-set bindir=d:\opt\bin2
 
-set devenv="C:\PROGRA~1\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.com"
-set devenv=F:\opt\VisualStudio\2022\Preview\Common7\IDE\devenv.exe 
+set dstdir=%bindir%
+if not exist "%dstdir" (
+ if exist c:\opt\bin  set dstdir=c:\opt\bin
+ if exist d:\opt\bin2 set dstdir=d:\opt\bin2
+)
+
+if not exist "%msbuild%" (
+echo Fall back msbuild not found at "%msbuild%"
 set msbuild=F:\opt\VisualStudio\2022\Preview\MSBuild\Current\Bin\MSBuild.exe
-
-@rem @echo Clean Build 
-@rem %devenv% llfile.sln /Clean "Debug|x64" /Projectconfig "Debug|x64"
-@rem %devenv% llfile.sln /Clean "Release|x64" /Projectconfig "Release|x64"
- 
+)
 
 @echo ---- Clean Release llfile
 del Bin\x64\Release\llfile.exe 2> nul
@@ -23,7 +24,7 @@ rmdir /s Obj  2> nul
 @echo.
 @echo ---- Build Release llfile
 @rem %devenv% llfile.sln /Project llfile /Build "Release|x64"  /Projectconfig "Release|x64"
-%msbuild% llfile.sln -p:Configuration="Release";Platform=x64 -verbosity:minimal  -detailedSummary:True
+"%msbuild%" llfile.sln -p:Configuration="Release";Platform=x64 -verbosity:minimal  -detailedSummary:True
 
 @echo.
 @echo ---- Build done 

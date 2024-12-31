@@ -317,18 +317,21 @@ size_t DirectoryScan::GetFilesInDirectory2(int depth)
     if (hSearch == INVALID_HANDLE_VALUE)
     {
         // No files found
-        if (depth == 0)
-        {
-            // PresentError(GetLastError(), "Failed to open directory, ", m_dir);
-        }
+        // if (depth == 0)
+        // {
+            LLMsg::PresentError(GetLastError(), "Failed to open directory, ", m_dir);
+        // }
         return 0;
     }
 
     m_dir[dirLen] = '\0';
     while (is_more && !m_abort)
     {
+        // fixFile(m_dir, dirLen, FileData);
+
         if ((FileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
         {
+            
             if (m_skipJunction && (FileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
             {
                 is_more = (FindNextFile(hSearch, &FileData) != 0) ? true : false;
@@ -413,6 +416,27 @@ size_t DirectoryScan::GetFilesInDirectory2(int depth)
     }
 
     return fileCnt;
+}
+ 
+// ---------------------------------------------------------------------------
+WCHAR* DirectoryScan::getFullName_W(const char* inDir, size_t inDirLen, const WIN32_FIND_DATA* pFileData, WCHAR* dstW, size_t dstSizeW) {
+    char bufMB[LL_MAX_PATH];
+    strcpy(bufMB, inDir);
+    bufMB[inDirLen] = sDirChr;
+    strcpy_s(bufMB + inDirLen + 1, ARRAYSIZE(bufMB) - inDirLen - 1, pFileData->cFileName);
+    size_t wLen = 0;
+    mbstowcs_s(&wLen, dstW, dstSizeW, bufMB, dstSizeW);
+    WIN32_FIND_DATAW FileDataW;
+    HANDLE hSearch = FindFirstFileW(dstW, &FileDataW);
+    if (hSearch != INVALID_HANDLE_VALUE) {
+        wLen = inDirLen;
+        dstW[wLen++] = L'\\';
+        dstW[wLen] = L'\\0';
+        wcscpy(dstW + wLen, FileDataW.cFileName);
+        FindClose(hSearch);
+        return dstW;
+    }
+    return nullptr;
 }
 
 // ---------------------------------------------------------------------------

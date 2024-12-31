@@ -242,7 +242,6 @@
     <ClCompile Include="src\Security.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="src\comma.h" />
     <ClInclude Include="src\Compress\minilzo.h" />
     <ClInclude Include="src\dirscan.h" />
