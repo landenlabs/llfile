@@ -288,33 +288,35 @@ int LLFind::Run(const char* cmdOpts, int argc, const char* pDirs[])
     {
         VerboseMsg() << " EnvDir:" << m_envStr << std::endl;
 
+        m_onlyAttr = FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_ARCHIVE;
+        for (unsigned argn = 0; argn < inFileList.size(); argn++)
+        {
+            lstring lookFor = inFileList[argn];
+            size_t pos = lookFor.find_last_of('.');
+            size_t extCnt = 1;
+            const char* sExeExtn[] = { "", ".exe", ".bat", ".cmd", ".com", ".ps1" };
+            if (pos == std::string::npos) {
+                pos = lookFor.length();
+                extCnt = ARRAYSIZE(sExeExtn);
+            }
+            unsigned len = 0;
+            for (unsigned idx = 0; idx < extCnt; idx++) {
+                lookFor.replace(pos, len, sExeExtn[idx]);
+                len = strlen(sExeExtn[idx]);
+                m_includeFileList.push_back(lookFor);
+            }
+        }
+
         // Iterate over env paths
         Split envPaths(m_envStr, ";");
-
-        for (unsigned argn=0; argn < inFileList.size(); argn++)
-        {
-			for (uint envIdx = 0; envIdx != envPaths.size(); envIdx++)
-			{
-				lstring  dirPat = LLPath::Join(envPaths[envIdx], inFileList[argn].c_str());
-				bool findExecutable = whereMode && inFileList[argn].find('.', 0) == -1;
-
-				size_t foundCnt = 0;
-				unsigned pos = dirPat.length();
-				unsigned len = 0;
-				const char* sExeExtn[] = { "", ".exe", ".bat", ".cmd", ".com", ".ps1" };
-				for (unsigned idx = 0; idx < ARRAYSIZE(sExeExtn); idx++)
-				{
-					VerboseMsg() << "  ScanDir:" << dirPat << std::endl;
-					m_dirScan.Init(dirPat, NULL);
-					foundCnt = m_dirScan.GetFilesInDirectory();
-					if (foundCnt != 0 || !findExecutable)
-						break;
-					dirPat.replace(pos, len, sExeExtn[idx]);
-					len = strlen(sExeExtn[idx]);
-				}
-				 
-				nFiles += foundCnt;
-            }
+		for (uint envIdx = 0; envIdx != envPaths.size(); envIdx++)
+		{
+			// lstring  dirPat = LLPath::Join(envPaths[envIdx], inFileList[argn].c_str());
+            lstring  dirPath = envPaths[envIdx];	
+			VerboseMsg() << "  ScanDir:" << dirPath << std::endl;
+            // std::cerr << " Looking for:" << inFileList.at(0) << " in:" << dirPath << std::endl;
+			m_dirScan.Init(dirPath, NULL);
+            nFiles += m_dirScan.GetFilesInDirectory();
         }
     }
     else

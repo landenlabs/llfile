@@ -305,6 +305,10 @@ int main(int argc, const char* argv[])
                             abbreviatedCmd[0] = *argvPtr;
                             abbreviatedCmd[1] = '\0';
                             cmd = GetDefaultCommand(abbreviatedCmd);
+                            if (cmd == eNone) {
+                                std::cerr << "Unknown -x option: " << argvPtr << std::endl;
+                                return -1;
+                            }
                             break;
                         }
 
