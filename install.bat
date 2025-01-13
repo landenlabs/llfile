@@ -5,7 +5,7 @@
 set prog=llfile
 
 set dstdir=%bindir%
-if not exist "%dstdir" (
+if not exist "%dstdir%" (
  if exist c:\opt\bin  set dstdir=c:\opt\bin
  if exist d:\opt\bin2 set dstdir=d:\opt\bin2
 )
@@ -35,24 +35,24 @@ if not exist "Bin\x64\Release\llfile.exe" (
 dir Bin\x64\Release\llfile.exe
 
 @echo ---- Uninstall llfile
-Bin\x64\Release\llfile.exe -xu %bindir% > nul
-Bin\x64\Release\llfile.exe -xr -f %bindir%\llfile.exe > nul
-Bin\x64\Release\llfile.exe %bindir%\*.exe
+Bin\x64\Release\llfile.exe -xu %dstdir% > nul
+Bin\x64\Release\llfile.exe -xr -f %dstdir%\llfile.exe > nul
+Bin\x64\Release\llfile.exe %dstdir%\*.exe
 
-@echo ---- Copy Release to c:\opt\bin2
-copy Bin\x64\Release\llfile.exe %bindir%\llfile.exe
-dir  Bin\x64\Release\llfile.exe %bindir%\llfile.exe
+@echo ---- Copy Release to %dstdir%
+copy Bin\x64\Release\llfile.exe %dstdir%\llfile.exe
+dir  Bin\x64\Release\llfile.exe %dstdir%\llfile.exe
 
 :: @echo
 :: @echo Compare md5 hash
-:: cmp -h Bin\x64\Release\llfile.exe c:\opt\bin\llfile.exe
+:: cmp -h Bin\x64\Release\llfile.exe %dstdir%\llfile.exe
 
 :: @echo.
 :: @echo List all llfile.exe
-:: ld -r -h -p -F=llfile.exe bin c:\opt\bin
+:: ld -r -h -p -F=llfile.exe bin %dstdir%
 
 @echo ---- Install using llfile -xi
-pushd %bindir%
+pushd %dstdir%
 llfile -xi > nul
 ld -i *.exe 
 popd
