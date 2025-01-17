@@ -70,11 +70,11 @@ public:
         return (pExtn == nullptr) ? pExtn : pExtn+1;
     }
 
-    // Return file name+extension or NULL
+    // Return file name+extension or path
     static const char* GetNameAndExt(const char* path) noexcept
     {
         const char* pDir = strrchr(path, sDirChr());
-        return (pDir == nullptr) ? pDir : pDir+1;
+        return (pDir == nullptr) ? path : pDir+1;
     }
 
     // Return true if path points a file or directory

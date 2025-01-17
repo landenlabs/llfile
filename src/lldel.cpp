@@ -226,8 +226,11 @@ int LLDel::Run(const char* cmdOpts, int argc, const char* pDirs[])
     // Iterate over dir patterns.
     for (int argn=0; argn < argc; argn++)
     {
+        bool recurse = m_dirScan.m_recurse;
+        m_dirScan.m_recurse &= !LLPath::IsFile(pDirs[argn]);
         m_dirScan.Init(pDirs[argn], NULL, m_dirScan.m_recurse);
         nFiles += m_dirScan.GetFilesInDirectory();
+        m_dirScan.m_recurse = recurse;
     }
 
     if (m_echo)

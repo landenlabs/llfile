@@ -471,7 +471,7 @@ void DirectoryScan::Init(
 
     // Clean any unix paths into windows/dos paths
     std::replace(m_pathPat.begin(), m_pathPat.end(), '/', sDirChr);
-
+ 
     if (appendSlash && m_pathPat.back() != sDirChr)
     {
         // If input is a directory, append slash
