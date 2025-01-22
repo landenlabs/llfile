@@ -485,7 +485,7 @@ int LLDel::ProcessEntry(
                                         rmErr = errno;
                                 } 
                                 if (rmErr != 0)
-                                    ErrorMsg() << " del error - File open or in use on " << m_srcPath << std::endl;
+                                    ErrorMsg() << " Delete error - Folder protected or File open or in use: " << m_srcPath << std::endl;
                             } 
                             else
                                 ErrorMsg() << " del error - " << errBuf << " " << errmsg << " on " << m_srcPath << std::endl;
