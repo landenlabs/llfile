@@ -1,0 +1,28 @@
+ Volume in drive F is SSD
+ Volume Serial Number is 189A-A50F
+
+ Directory of F:\opt\software\soft14\cpp\dlang\all\_ll\llfile\test
+
+04/15/2024  03:38 PM    <DIR>          .
+04/15/2024  03:38 PM    <DIR>          ..
+04/15/2024  03:38 PM    <DIR>          dir1
+04/15/2024  03:38 PM    <DIR>          dir2
+04/15/2024  03:38 PM    <DIR>          dst
+02/28/2024  08:47 PM               834 t1.txt
+02/28/2024  08:47 PM               881 t2.txt
+10/19/2015  07:52 AM    <DIR>          val1
+10/19/2015  07:53 AM    <DIR>          val2
+06/25/2015  08:31 PM             1,553 x1
+06/25/2015  08:31 PM             1,553 x1.txt
+06/26/2015  07:36 AM               344 x2
+06/26/2015  07:36 AM               344 x2.txt
+06/25/2015  08:31 PM             1,553 x3
+06/25/2015  08:31 PM             1,553 x3.txt
+07/16/2015  09:47 PM    <DIR>          y
+04/15/2024  03:38 PM    <DIR>          y-dir
+04/15/2024  03:38 PM    <DIR>          z-dir
+06/25/2015  08:31 PM             1,553 z1.txt
+06/26/2015  07:36 AM               344 z2.txt
+06/25/2015  08:31 PM             1,553 z3.txt
+              11 File(s)         12,065 bytes
+              10 Dir(s)  56,518,537,216 bytes free

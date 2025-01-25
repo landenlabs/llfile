@@ -147,6 +147,14 @@ static const char sHelp[] =
 "   ld dir1\\dir*\\d*\\file*.txt     ; Wildcard in path and files \n"
 "   ld -F=*.exe,*.bat -r dir1     ; Find exe and batch files in dir1 \n"
 "   ld -P=*\\dir1\\* -F=*bat -r .   ; Find batch files in subdir dir1 \n"
+"   ld -rhp \"dir with spaces\" \n"
+" Notes these quotes are wrong,  \\\" is passing trailing quote as part of file pattern \n"
+"   ld -rhp \"dir-end-space \\\" \n"
+"   ld -rhp \"dir-end-space \\\"file* \n"
+" Correct quotes, escape back slash\n"
+"   ld -rhp \"dir-end-space \\\\\" \n"
+"   ld -rhp \"dir-end-space \\\\\"file* \n"
+"   "
 "\n";
 
 static const char sMoreHelp[] =

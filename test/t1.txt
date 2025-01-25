@@ -1,0 +1,21 @@
+ Volume in drive C is OS
+ Volume Serial Number is 7EDF-70C0
+
+ Directory of c:\opt\projects\projects-c++\_ll\llfile\test
+
+02/28/2024  08:47 PM    <DIR>          .
+02/28/2024  08:45 PM    <DIR>          ..
+10/19/2015  07:57 AM    <DIR>          dst
+02/28/2024  08:47 PM                 0 t1.txt
+10/19/2015  07:52 AM    <DIR>          val1
+10/19/2015  07:53 AM    <DIR>          val2
+06/25/2015  08:31 PM             1,553 x1
+06/26/2015  07:36 AM               344 x2
+06/25/2015  08:31 PM             1,553 x3
+07/16/2015  09:47 PM    <DIR>          y
+07/17/2021  10:20 PM    <DIR>          z
+06/25/2015  08:31 PM             1,553 z1
+06/26/2015  07:36 AM               344 z2
+06/25/2015  08:31 PM             1,553 z3
+               7 File(s)          6,900 bytes
+               7 Dir(s)  655,658,754,048 bytes free
