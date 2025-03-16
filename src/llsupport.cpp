@@ -521,42 +521,51 @@ int ReadFileList(
         if (*fileName == '\0')
             continue;
 
-        Handle hFile = CreateFile(fileName, FILE_READ_ATTRIBUTES, 7, 0, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, 0);
-        if (hFile.IsValid())
+        strcpy_s(findData.cFileName, ARRAYSIZE(findData.cFileName), fileName);
+        char* pDir = ".";
+
+        char* pEndDir = strchr(fileName, '\\');
+        if (pEndDir)
         {
-            bool okay = (GetFileInformationByHandle(hFile, &fileInfo) != 0);
-            // CloseHandle(hFile);
+            *pEndDir = '\0';
+            strcpy_s(findData.cFileName, ARRAYSIZE(findData.cFileName), pEndDir + 1);
+            pDir = fileName;
+        }
 
-            if (okay)
-            {
-                strcpy_s(findData.cFileName, ARRAYSIZE(findData.cFileName), fileName);
-                char* pDir = ".";
+        Handle hFile = CreateFile(fileName, FILE_READ_ATTRIBUTES, 7, 0, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, 0);
+        if (hFile.IsValid() && GetFileInformationByHandle(hFile, &fileInfo) != 0)
+        {
+            findData.dwFileAttributes = fileInfo.dwFileAttributes;
+            findData.ftCreationTime = fileInfo.ftCreationTime;
+            findData.ftLastAccessTime = fileInfo.ftLastAccessTime;
+            findData.ftLastWriteTime = fileInfo.ftLastWriteTime;
+            findData.nFileSizeHigh = fileInfo.nFileSizeHigh;
+            findData.nFileSizeLow = fileInfo.nFileSizeLow;
 
-                char* pEndDir = strchr(fileName, '\\');
-                if (pEndDir)
-                {
-                    *pEndDir = '\0';
-                    strcpy_s(findData.cFileName, ARRAYSIZE(findData.cFileName), pEndDir+1);
-                    pDir = fileName;
-                }
-
-                findData.dwFileAttributes = fileInfo.dwFileAttributes;
-                findData.ftCreationTime = fileInfo.ftCreationTime;
-                findData.ftLastAccessTime = fileInfo.ftLastAccessTime;
-                findData.ftLastWriteTime = fileInfo.ftLastWriteTime;
-                findData.nFileSizeHigh = fileInfo.nFileSizeHigh;
-                findData.nFileSizeLow = fileInfo.nFileSizeLow;
-
-                // LLMsg::Out() << "Filename:" << findData.cFileName << std::endl;
-                int status = doFileCb(cbData, pDir, &findData, 0);
-                if (status == sError && errFileCb)
-                    errFileCb(cbData, fileName, &findData);
-            }
+            // LLMsg::Out() << "Filename:" << findData.cFileName << std::endl;
+            int status = doFileCb(cbData, pDir, &findData, 0);
+            if (status == sError && errFileCb)
+                errFileCb(cbData, fileName, &findData);
         }
         else
         {
-            if (errFileCb)
+            SYSTEMTIME nowStUtc;
+            GetSystemTime(&nowStUtc);
+            FILETIME nowFtUtc;
+            SystemTimeToFileTime(&nowStUtc, &nowFtUtc);
+
+            findData.dwFileAttributes = 0;
+            findData.ftCreationTime = nowFtUtc;
+            findData.ftLastAccessTime = nowFtUtc;
+            findData.ftLastWriteTime = nowFtUtc;
+            findData.nFileSizeHigh = 0;
+            findData.nFileSizeLow = 0;
+
+            if (errFileCb) {
                 errFileCb(cbData, fileName, NULL);
+            } else {
+                doFileCb(cbData, pDir, &findData, 0);
+            }
         }
     }
 
