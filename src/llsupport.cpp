@@ -1432,7 +1432,36 @@ const char* ParseOutput(const char* cmdOpts, bool tee)
 #include <shellapi.h>
 #pragma comment(lib, "shell32")
 
+/*
+@rem works
+dir > \\.\F:\opt\software\cpp\dlang\all\_ll\llrename\test\win\con.txt
+dir > \\.\F:\opt\software\cpp\dlang\all\_ll\llrename\test\win\con
+
+@rem works
+del \\.\F:\opt\software\cpp\dlang\all\_ll\llrename\test\win\con
+*/
+
+
+/*
+`\\.\` (Device Namespace):
+ * This prefix, also known as the "device namespace," allows you to access devices and objects within 
+   the operating system's kernel, similar to how /dev works in Linux.
+ * Paths starting with `\\.\` are normalized, meaning they are converted to a standard format, 
+   and the path components like "." and ".." are resolved.
+ * Examples include accessing a physical drive (\\.\C:) or a named pipe (\\.\Pipe\MyPipe).
+ * You can browse the contents of the device namespace using tools like WinObjEx.
+
+\\? (Extended Path):
+ * This prefix, also known as the "extended path," bypasses all path normalization, 
+   meaning the path is passed to the file system verbatim.
+ * This allows you to use paths longer than the standard MAX_PATH limit (260 characters).
+ * You can use forward slashes (/) in the path, which are not allowed in standard paths.
+ * Examples include accessing a file with a very long name (\\?\C:\Long\Path\To\A\File.txt).
+ * It's important to note that the \\? prefix is only for absolute paths, not relative paths.
+ * 
+*/
 static lstring RAW_PREFIX = "\\\\?\\";
+// static lstring RAW_PREFIX = "\\\\.\\";
 
 int RemoveFile(const char* filePath, bool DelToRecycleBin, bool secureRemove)
 {
