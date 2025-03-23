@@ -1512,12 +1512,15 @@ int RemoveFile(const char* filePath, bool DelToRecycleBin, bool secureRemove)
     else
     {
         int error = remove(filePath);
+        /* 
         if (error == -1) {
             error = _doserrno;  // Error 123 = filename syntax error
             // ESRCH == 3,  File is open or in use
+            // Raw windows prefix requires full path. 
             lstring rawFile = RAW_PREFIX + filePath;
             return remove(rawFile);
         }
+        */
 
         // rmErr = _doserrno;
         // DWORD werr = GetLastError();

@@ -419,22 +419,27 @@ size_t DirectoryScan::GetFilesInDirectory2(int depth)
 }
  
 // ---------------------------------------------------------------------------
+// Dangerous - uses partial filename to find matching wide character filename.
 WCHAR* DirectoryScan::getFullName_W(const char* inDir, size_t inDirLen, const WIN32_FIND_DATA* pFileData, WCHAR* dstW, size_t dstSizeW) {
     char bufMB[LL_MAX_PATH];
     strcpy(bufMB, inDir);
     bufMB[inDirLen] = sDirChr;
-    strcpy_s(bufMB + inDirLen + 1, ARRAYSIZE(bufMB) - inDirLen - 1, pFileData->cFileName);
-    size_t wLen = 0;
-    mbstowcs_s(&wLen, dstW, dstSizeW, bufMB, dstSizeW);
-    WIN32_FIND_DATAW FileDataW;
-    HANDLE hSearch = FindFirstFileW(dstW, &FileDataW);
-    if (hSearch != INVALID_HANDLE_VALUE) {
-        wLen = inDirLen;
-        dstW[wLen++] = L'\\';
-        dstW[wLen] = L'\\0';
-        wcscpy(dstW + wLen, FileDataW.cFileName);
-        FindClose(hSearch);
-        return dstW;
+    lstring filename = pFileData->cFileName;
+    for (int flen = filename.length()-1; flen > 3; flen--) {
+        lstring filenamePart = filename.substr(0, flen) + "*";
+        strcpy_s(bufMB + inDirLen + 1, ARRAYSIZE(bufMB) - inDirLen - 1, filenamePart);
+        size_t wLen = 0;
+        mbstowcs_s(&wLen, dstW, dstSizeW, bufMB, dstSizeW);
+        WIN32_FIND_DATAW FileDataW;
+        HANDLE hSearch = FindFirstFileW(dstW, &FileDataW);
+        if (hSearch != INVALID_HANDLE_VALUE) {
+            wLen = inDirLen;
+            dstW[wLen++] = L'\\';
+            dstW[wLen] = L'\0';
+            wcscpy(dstW + wLen, FileDataW.cFileName);
+            FindClose(hSearch);
+            return dstW;
+        }
     }
     return nullptr;
 }

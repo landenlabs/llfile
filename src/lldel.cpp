@@ -90,7 +90,7 @@ static const char sHelp[] =
 "  If you use the -r for recursion, best to test with -n first to see what will get deleted \n"
 "    lr -n -r dir1\\  dir_*2\\   \n"
 "    lr    -r dir1\\  dir_*2\\   \n"
-"    lr -rf dir*pat\ file*pat  ; Directory pattern must end in slash else considered file pat\n"
+"    lr -rf dir*pat\\ file*pat  ; Directory pattern must end in slash else considered file pat\n"
 "\n"
 "  Notes these quotes are wrong, \\\" is passing trailing quote as part of file pattern \n"
 "    lr -r \"dir-end-space \\\" \n"
@@ -463,7 +463,7 @@ int LLDel::ProcessEntry(
                     rmErr = _doserrno;
                     DWORD werr = GetLastError();
 
-                    if (rmErr = ESRCH)
+                    if (rmErr == ESRCH)
                     {
                         reportProcessOpenFile(m_srcPath);
                     }
@@ -490,7 +490,7 @@ int LLDel::ProcessEntry(
                             char errBuf[LL_MAX_PATH];
                             strerror_s(errBuf, sizeof(errBuf), _doserrno);
                             SetColor(LLDel::sConfig.m_colorError);
-                            if (rmErr == ESRCH) {
+                            if (rmErr == ESRCH || rmErr == ENOENT) {
                                 if (wPath != nullptr) {
                                     errno = 0;
                                     rmErr = _wremove(wPath);
