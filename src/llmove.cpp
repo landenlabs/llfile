@@ -309,12 +309,12 @@ int LLMove::ProcessEntry(
     if (m_isDir && (m_onlyAttr & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)  
         return sIgnore;
 
-    bool createDir = true;
+    bool createDir = m_exec;
     // Populate m_dstPath, replace #n and *n patterns.
     //   If pFileData is not a directory then m_dstPath only contains pDstDir part.
     if (!MakeDstPathEx(m_toDir, pFileData, m_pPattern, createDir)) {
         DWORD error = GetLastError();
-        if (error != 183) { // file exit
+        if (error != 0 && error != 183) { // file exit
             ErrorMsg() << "Failed to create directory:("
                 << error
                 << ") " << LLMsg::GetErrorMsg(error)
