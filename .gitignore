@@ -14,8 +14,10 @@
 x64/
 obj/
 bin/
-
+lib/
 .vs/
 .obj
 .exe
+.pdb
+.lib
 
