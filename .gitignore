@@ -16,8 +16,10 @@ obj/
 bin/
 lib/
 .vs/
-.obj
-.exe
-.pdb
-.lib
+*.obj
+*.exe
+*.pdb
+*.lib
+*.aps
+
 
