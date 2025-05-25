@@ -1,5 +1,5 @@
 # .gitignore
-.git/
+git-notes.txt
 
 # Mac exclude
 .DS_Store
@@ -9,7 +9,6 @@
 *.xcuserstate
 
 # Windows VisualStudio
-# windows
 .ipch/
 x64/
 obj/
@@ -21,5 +20,4 @@ lib/
 *.pdb
 *.lib
 *.aps
-
-
+*.user  # project.vcxproj.user
