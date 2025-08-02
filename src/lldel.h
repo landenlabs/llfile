@@ -91,6 +91,11 @@ protected:
     bool        m_showPath;         // show full file path
     bool        m_showSize;
 
+    unsigned    m_delFileCnt;
+    unsigned    m_delDirCnt;
+    unsigned    m_failFileCnt;
+    unsigned    m_failDirCnt;
+
 protected:
     // Return 1 if output anything, 0 if nothing, -1 if error.
     virtual int ProcessEntry(const char* pDir, const WIN32_FIND_DATA* pFileData, int depth);

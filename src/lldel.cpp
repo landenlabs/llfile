@@ -118,7 +118,11 @@ LLDel::LLDel() :
     m_undo(false),      // true, delete moves file/folder into recycle bin.
     m_overWrite(false),
     m_errQuitCnt(0),
-    m_errSleepSec(0)
+    m_errSleepSec(0),
+    m_delFileCnt(0),
+    m_delDirCnt(0),
+    m_failFileCnt(0),
+    m_failDirCnt(0)
 {
     m_showAttr  =
         m_showCtime =
@@ -245,7 +249,7 @@ int LLDel::Run(const char* cmdOpts, int argc, const char* pDirs[])
         m_dirScan.m_recurse = recurse;
     }
 
-    if (m_echo)
+    if (m_echo || m_countError != 0)
     {
         LLMsg::Out() << "\n";
         SetColor(sConfig.m_colorHeader);
@@ -262,9 +266,11 @@ int LLDel::Run(const char* cmdOpts, int argc, const char* pDirs[])
             LLMsg::Out() << m_countOutDir << " Directories, ";
         LLMsg::Out() << m_countOutFiles << " Files, " << m_totalSize << " bytes\n";
 
-        // DWORD mseconds = GetTickCount() - m_startTick;
-        // PresentMseconds(mseconds);
+        // DWORD m_seconds = GetTickCount() - m_startTick;
+        // PresentMseconds(m_seconds);
         SetColor(sConfig.m_colorNormal);
+
+        // TODO - decide if we use m_delFileCnt, m_delDirCnt, m_failFileCnt, m_failDirCnt
     }
 
 	return ExitStatus((int)m_countOutFiles);
@@ -444,6 +450,7 @@ int LLDel::ProcessEntry(
                                 SetColor(LLDel::sConfig.m_colorNormal);
                             }
                             m_countError++;
+                            m_failDirCnt++;
                         }
                     }
                 }
@@ -451,6 +458,7 @@ int LLDel::ProcessEntry(
                 {
                     retStatus = sOkay;
                     m_countOutDir++;
+                    m_delDirCnt++;
                 }
             }
             else
@@ -512,8 +520,10 @@ int LLDel::ProcessEntry(
                             rmErr = LLSup::RemoveFile(m_srcPath, m_undo, m_overWrite);
                         }
 
-                        if (rmErr != 0)
+                        if (rmErr != 0) {
                             m_countError++;
+                            m_failFileCnt++;
+                        }
                     }
                 }
 
@@ -521,6 +531,7 @@ int LLDel::ProcessEntry(
                 {
                     retStatus = sOkay;
                     m_countOutFiles++;
+                    m_delFileCnt++;
                     m_totalSize += m_fileSize;
                 }
             }
