@@ -56,18 +56,13 @@
 static const char sHelp[] =
 " Size " LLVERSION "\n"
 "\n"
+"  List size of attached storage devices\n"
+"\n"
 "  !0eSyntax:!0f\n"
-"    [<switches>] -c \"command\" <Pattern>... \n"
+"    [<switches>]... \n"
 "\n"
 "  !0eWhere switches are:!0f\n"
 "   !02-?!0f                  ; Show this help\n"
-"   !02-A=!0f[nrhs]           ; Limit files by attribute (n=normal r=readonly, h=hidden, s=system)\n"
-"   !02-B=!0fc                ; Add additional field separators to use with #n selection\n"
-"   !02-D!0f                  ; Only process directories \n"
-"   !02-e=!0f[lgen]<value>[L<loopCnt> ;  Echo if exit status less, greater, equal notEqual to value \n"
-"                       ;   Optionally continue Looping executing loopCnt while exit status okay \n"
-"   !02-F!0f                  ; Only process files \n"
-"   !02-F=!0f<filePat>,...    ; Limit to matching file patterns \n"
 "\n"
 "  !0eExamples:!0f\n"
 "   s   \n"
@@ -441,7 +436,7 @@ int ListMediaNoAdmin() {
 
         hr = pclsObj->Get(L"Tag", 0, &vtProp, 0, 0);
         if (hr == S_OK)
-            std::wcout << std::setw(22) << ( vtProp.bstrVal != nullptr ? vtProp.bstrVal : L"" );
+            std::wcout << " " << std::setw(-20) << ( vtProp.bstrVal != nullptr ? vtProp.bstrVal : L"" );
         VariantClear(&vtProp);
 
         hr = pclsObj->Get(L"SerialNumber", 0, &vtProp, 0, 0);
@@ -478,6 +473,7 @@ int ListMediaNoAdmin() {
     pLoc->Release();
     pEnumerator->Release();
     CoUninitialize();
+    std::wcout << std::endl;
 
     return 0;
 }
@@ -564,7 +560,7 @@ int ListStorageDevicesWithAdmin() {
                         NULL
                         )) {
                         std::string driveType = GetDriveTypeAsString(pDesc->BusType);
-                        std::cout << "  - Disk " << i << ": " << std::fixed << std::setprecision(2) << sizeGB << " GB, Type: " << driveType << std::endl;
+                        std::cout << " P" << i << std::setw(7) << std::format("{:L}",  (long)sizeGB) << " GB" << std::endl;
                     }
                 }
             }
@@ -578,7 +574,7 @@ int ListStorageDevicesWithAdmin() {
 
 struct StorageDevice {
     std::string path;
-    std::string   friendlyName, className, compatibleIds, devDescription, enumName, uiNumberStr;
+    std::string   friendlyName, className, compatibleIds, devDescription, enumName, uiNumberStr, phyName, location;
     unsigned long long sizeInBytes;
 };
 
@@ -637,7 +633,7 @@ std::vector<StorageDevice> getStorageDevicesWithAdmin() {
     devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
 
     for (DWORD i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, &devInfoData); ++i) {
-        string friendlyName, className, compatibleIds, devDescription, enumName, uiNumberStr;
+        string friendlyName, className, compatibleIds, devDescription, enumName, uiNumberStr, phyName, characteristics, path, id, mfg, location;
 
         if (getProperty(hDevInfo, devInfoData, SPDRP_FRIENDLYNAME, friendlyName)) {
             getProperty(hDevInfo, devInfoData, SPDRP_CLASS, className);
@@ -645,7 +641,13 @@ std::vector<StorageDevice> getStorageDevicesWithAdmin() {
             getProperty(hDevInfo, devInfoData, SPDRP_DEVICEDESC, devDescription);
             getProperty(hDevInfo, devInfoData, SPDRP_ENUMERATOR_NAME, enumName);
             getProperty(hDevInfo, devInfoData, SPDRP_UI_NUMBER_DESC_FORMAT, uiNumberStr);
-
+            getProperty(hDevInfo, devInfoData, SPDRP_PHYSICAL_DEVICE_OBJECT_NAME, phyName);
+            getProperty(hDevInfo, devInfoData, SPDRP_CHARACTERISTICS, characteristics);
+            getProperty(hDevInfo, devInfoData, SPDRP_LOCATION_PATHS, path);
+            getProperty(hDevInfo, devInfoData,  SPDRP_HARDWAREID, id);
+            getProperty(hDevInfo, devInfoData, SPDRP_MFG, mfg);
+            getProperty(hDevInfo, devInfoData, SPDRP_LOCATION_INFORMATION, location);
+ 
             // getProperty(hDevInfo, devInfoData, SPDRP_REMOVAL_POLICY,  xxx);
 
             char deviceInstanceId[MAX_PATH];
@@ -678,15 +680,17 @@ std::vector<StorageDevice> getStorageDevicesWithAdmin() {
                     &bytesReturned,
                     NULL
                     )) {
-                    devices.push_back({devicePath, friendlyName, className, compatibleIds, devDescription, enumName, uiNumberStr, ( unsigned long long )diskGeometry.DiskSize.QuadPart});
+                    devices.push_back({devicePath, friendlyName, className, compatibleIds, 
+                        devDescription, enumName, uiNumberStr, phyName, location, ( unsigned long long )diskGeometry.DiskSize.QuadPart});
                 } else {
                     std::cerr << "Failed to get disk geometry. Error: " << GetLastError() << std::endl;
-                    devices.push_back({devicePath, friendlyName, 0});
+                    devices.push_back({devicePath, friendlyName, className, compatibleIds,
+                        devDescription, enumName, uiNumberStr, phyName, location, 0});
                 }
                 CloseHandle(hDevice);
             } else {
-                std::cerr << "Failed to open device  " << friendlyName << ", Error: " << GetLastError() << std::endl;
-                devices.push_back({"", friendlyName, className, compatibleIds, devDescription, enumName, uiNumberStr, 0});
+                // std::cerr << "Failed to open device  " << friendlyName << ", Error: " << GetLastError() << std::endl;
+                devices.push_back({"", friendlyName, className, compatibleIds, devDescription, enumName, uiNumberStr, phyName, location, 0});
             }
         }
     }
@@ -698,35 +702,36 @@ std::vector<StorageDevice> getStorageDevicesWithAdmin() {
 void ListStorageSizes() {
     std::locale::global(std::locale("en_US.UTF-8"));    // Required to get comma when using format("{:L}", value)
 
-    bool hasAdmin = IsProcessElevated();
-    if (hasAdmin) {
-        std::cout << "Have admin privilege\n";
-        auto devices = getStorageDevicesWithAdmin();
-        if (devices.empty()) {
-            std::cout << "No storage devices found." << std::endl;
-        } else {
-            std::cout << "Available Storage Devices:" << std::endl;
-            for (const auto& dev : devices) {
-                std::cout << dev.friendlyName << std::endl;
-                std::cout << "\t" << dev.className << std::endl;
-                std::cout << "\t" << dev.compatibleIds << std::endl;
-                std::cout << "\t" << dev.devDescription << std::endl;
-                std::cout << "\t" << dev.enumName << std::endl;
-                std::cout << "\t" << dev.uiNumberStr << std::endl;
-
-                if (dev.sizeInBytes > 0) {
-                    std::cout << "Path: " << dev.path << std::endl;
-                    std::cout << "Size: " << ( dev.sizeInBytes / ( 1024.0 * 1024.0 * 1024.0 ) ) << " GB" << std::endl;
-                }
-            }
-        }
-
-        ListStorageDevicesWithAdmin();
+    bool hasAdmin =IsProcessElevated();
+ 
+    auto devices = getStorageDevicesWithAdmin();
+    if (devices.empty()) {
+        std::cout << "No storage devices found." << std::endl;
     } else {
-        std::cout << "No admin privilege\n";
-        ListStorageDevicesNoAdmin();
-        ListMediaNoAdmin();
+        std::cout << "Available Storage Devices:" << std::endl;
+        for (const auto& dev : devices) {
+            std::cout << " L";
+            std::cout << setw(1) << dev.location;
+            // std::cout << setw(12) << dev.className;
+            // std::cout << setw(10) << dev.compatibleIds;
+            // std::cout << setw(12) << dev.devDescription;
+            // std::cout << setw(6) << dev.enumName;
+            std::cout << " " << setw(30) << dev.phyName;
+            // std::cout << setw(16) << dev.characteristics;
+            // std::cout << setw(6) << dev.uiNumberStr;
+            if (dev.sizeInBytes > 0) {
+                std::cout << setw(10) << dev.path << std::endl;
+                std::cout << setw(7) << std::format("{:L}", dev.sizeInBytes / ( 1024.0 * 1024.0 * 1024.0 ) ) << " GB" << std::endl;
+            }
+            std::cout << " "  << dev.friendlyName;
+            std::cout << endl;
+        }
+        std::cout << endl;
     }
+
+    ListStorageDevicesWithAdmin();
+    ListStorageDevicesNoAdmin();
+    ListMediaNoAdmin();
 }
 
 
@@ -751,8 +756,8 @@ LLConfig& LLSize::GetConfig()
 // ---------------------------------------------------------------------------
 int LLSize::StaticRun(const char* cmdOpts, int argc, const char* pDirs[])
 {
-    LLSize llExec;
-    return llExec.Run(cmdOpts, argc, pDirs);
+    LLSize llSize;
+    return llSize.Run(cmdOpts, argc, pDirs);
 }
 
 // ---------------------------------------------------------------------------
@@ -783,21 +788,15 @@ int LLSize::Run(const char* cmdOpts, int argc, const char* pDirs[])
             Colorize(std::cout, sHelp);
             return sIgnore;
         default:
-            if ( !ParseBaseCmds(cmdOpts))
-                return sError;
+            // if ( !ParseBaseCmds(cmdOpts))
+            //     return sError;
+            break;
         }
 
         // Advance to next parameter
         LLSup::AdvCmd(cmdOpts);
     }
 
-
-    VerboseMsg() << "LLExecute:\n"
-              << (m_prompt ? " Prompt\n" : "")
-              << (m_echo ? " Echo\n" : "Quit\n")
-              << (m_exec ? "": " NoExecute\n")
-              << " Separators:[" << m_separators << "]\n"
-              << "\n";
 
     ListStorageSizes();
 
