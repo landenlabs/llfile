@@ -35,7 +35,9 @@
 #include <sstream>
 #include <set>
 
+#define byte win_byte_override  // Fix for c++ v17
 #include <windows.h>
+#undef byte  
 #include <winioctl.h>
 
 #include <sys/types.h>

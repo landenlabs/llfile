@@ -31,7 +31,9 @@
 #include <vector>
 #include <algorithm>
 #include <assert.h>
+#define byte win_byte_override  // Fix for c++ v17
 #include <windows.h>
+#undef byte  
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -522,7 +524,7 @@ int ReadFileList(
             continue;
 
         strcpy_s(findData.cFileName, ARRAYSIZE(findData.cFileName), fileName);
-        char* pDir = ".";
+        const char* pDir = ".";
 
         char* pEndDir = strchr(fileName, '\\');
         if (pEndDir)

@@ -323,7 +323,9 @@
 #    ifdef FAR
 #      undef FAR
 #    endif
-#    include <windows.h>
+#define byte win_byte_override  // Fix for c++ v17
+#include <windows.h>
+#undef byte  
      /* No need for _export, use ZLIB.DEF instead. */
      /* For complete Windows compatibility, use WINAPI, not __stdcall. */
 #    define ZEXPORT WINAPI

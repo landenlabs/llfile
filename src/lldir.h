@@ -32,7 +32,9 @@
 #pragma once
 
 #include <iostream>
+#define byte win_byte_override  // Fix for c++ v17
 #include <windows.h>
+#undef byte  
 
 #include "llbase.h"
 #include <set>
@@ -65,16 +67,16 @@ struct LLDirConfig  : public LLConfig
         m_colorHeader   = FOREGROUND_INTENSITY + FOREGROUND_WHITE;
     }
     char        m_fillNumDT;
-    char*       m_dateSep;
-    char*       m_timeSep;
-    char*       m_dateTimeSep;
+    const char* m_dateSep;
+    const char* m_timeSep;
+    const char* m_dateTimeSep;
     bool        m_refDateTime;
     bool        m_numDateTime;
     bool        m_fileTimeLocalTZ;  // Present time in Local Timezone
-    char*       m_attrChr;
+    const char* m_attrChr;
     char        m_attrFiller;
     std::string m_dirFieldSep;
-    char*       m_dirBeg;
+    const char* m_dirBeg;
     int         m_fzWidth;
 
     WORD        m_colorDir;

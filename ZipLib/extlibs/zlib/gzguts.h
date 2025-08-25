@@ -101,7 +101,9 @@
 
 /* get errno and strerror definition */
 #if defined UNDER_CE
-#  include <windows.h>
+#define byte win_byte_override  // Fix for c++ v17
+#include <windows.h>
+#undef byte  
 #  define zstrerror() gz_strwinerror((DWORD)GetLastError())
 #else
 #  ifndef NO_STRERROR

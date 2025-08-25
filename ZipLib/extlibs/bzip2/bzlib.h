@@ -76,7 +76,9 @@ typedef
 #endif
 
 #ifdef _WIN32
-#   include <windows.h>
+#define byte win_byte_override  // Fix for c++ v17
+#include <windows.h>
+#undef byte  
 #   ifdef small
       /* windows.h define small to char */
 #      undef small

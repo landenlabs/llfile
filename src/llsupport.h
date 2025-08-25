@@ -39,7 +39,9 @@
 #include <list>
 #include <set>
 #include <string>
-#include <Windows.h>
+#define byte win_byte_override  // Fix for c++ v17
+#include <windows.h>
+#undef byte  
 
 
 

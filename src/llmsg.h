@@ -33,7 +33,9 @@
 #ifndef LOGMSG_H
 #define LOGMSG_H
 
-#include <Windows.h>
+#define byte win_byte_override  // Fix for c++ v17
+#include <windows.h>
+#undef byte  
 #include <iostream>
 #include <sstream>
 

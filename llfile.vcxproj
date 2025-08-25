@@ -117,6 +117,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>26493;26462;26496;26814;26482;26485;26481</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -138,6 +139,7 @@
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>26493;26462;26496;26814;26482;26485;26481</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -162,6 +164,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>26493;26462;26496;26814;26482;26485;26481</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -189,11 +192,12 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <EnablePREfast>false</EnablePREfast>
       <DisableSpecificWarnings>26493;26462;26496;26814;26482;26485;26481</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -235,6 +239,7 @@
     <ClCompile Include="src\llpath.cpp" />
     <ClCompile Include="src\llprintf.cpp" />
     <ClCompile Include="src\llreplace.cpp" />
+    <ClCompile Include="src\llsize.cpp" />
     <ClCompile Include="src\llsupport.cpp" />
     <ClCompile Include="src\LocaleFmt.cpp" />
     <ClCompile Include="src\llstring.cpp" />
@@ -261,6 +266,7 @@
     <ClInclude Include="src\llmsg.h" />
     <ClInclude Include="src\llpath.h" />
     <ClInclude Include="src\llreplace.h" />
+    <ClInclude Include="src\llsize.h" />
     <ClInclude Include="src\llstring.h" />
     <ClInclude Include="src\llprintf.h" />
     <ClInclude Include="src\llsupport.h" />

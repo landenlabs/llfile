@@ -7,7 +7,9 @@
 #include <stddef.h>
 
 #ifdef _WIN32
+#define byte win_byte_override  // Fix for c++ v17
 #include <windows.h>
+#undef byte  
 #endif
 
 #ifndef EXTERN_C_BEGIN

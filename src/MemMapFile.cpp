@@ -29,7 +29,9 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //=================================================================================================
 
+#define byte win_byte_override  // Fix for c++ v17
 #include <windows.h>
+#undef byte  
 
 #include "MemMapFile.h"
 

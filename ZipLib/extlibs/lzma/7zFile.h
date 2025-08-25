@@ -9,7 +9,9 @@
 #endif
 
 #ifdef USE_WINDOWS_FILE
+#define byte win_byte_override  // Fix for c++ v17
 #include <windows.h>
+#undef byte  
 #else
 #include <stdio.h>
 #endif

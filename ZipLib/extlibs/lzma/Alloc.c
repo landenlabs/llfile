@@ -4,7 +4,9 @@ Igor Pavlov
 Public domain */
 
 #ifdef _WIN32
+#define byte win_byte_override  // Fix for c++ v17
 #include <windows.h>
+#undef byte  
 #endif
 #include <stdlib.h>
 

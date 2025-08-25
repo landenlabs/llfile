@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// llcopy - Copy files provided by DirectoryScan
+// llsize - List device storage size
 //
 // Author: Dennis Lang - 2015
 // http://landenlabs.com/
@@ -42,63 +42,29 @@
 struct DirectoryScan;
 
 // ---------------------------------------------------------------------------
-struct LLCopyConfig  : public LLConfig
+struct LLSizeConfig  : public LLConfig
 {
-    LLCopyConfig()
-    {
-        m_colorUp       = FOREGROUND_GREEN;
-        m_colorDown     = FOREGROUND_BLUE | FOREGROUND_GREEN;
-        m_colorROnly    = FOREGROUND_RED;
-        m_colorNormal   = m_defFgColor;     // FOREGROUND_INTENSITY;
-        m_colorHeader   = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-    }
-
-    WORD  m_colorUp;
-    WORD  m_colorDown;
-    WORD  m_colorROnly;
-    WORD  m_colorNormal;
-    WORD  m_colorHeader;
 };
 
-class LLCopy : public LLBase
+class LLSize : public LLBase
 {
 public:
-    LLCopy();
+    LLSize();
 
     static int StaticRun(const char* cmdOpts, int argc, const char* pDirs[]);
     int Run(const char* cmdOpts, int argc, const char* pDirs[]);
 
-    bool        m_force;
-    bool        m_older;           // old copy if destination is older
-    bool        m_overWrite;
-    bool        m_compress;
-	bool		m_append;
-	bool		m_follow;
+	LLSup::SizeOp	m_exitOp;
+	LONGLONG		m_exitValue;
+	uint			m_countExitOkayCnt;
+	uint			m_countExitShowCnt;
 
-    BOOL        m_cancel;         // used by ProgressCb
-    DWORD       m_copyTick;       // used by ProgressCb
-    DWORD       m_chmod;          // change permission, 0=noChange, _S_IWRITE  or _S_IREAD
-
-    const char* m_toDir;
-    const char* m_pPattern;
-
-    size_t      m_subDirCnt;
-    LONGLONG    m_totalBytes;
-
-    static LLCopyConfig sConfig;
+    static LLSizeConfig sConfig;
     LLConfig&       GetConfig();
 
 protected:
     // Return 1 if output anything, 0 if nothing, -1 if error.
     virtual int ProcessEntry(const char* pDir, const WIN32_FIND_DATA* pFileData, int depth);
-
-	bool CopyFile(
-		const char* srcFile,
-		const char* dstFile,
-		LPPROGRESS_ROUTINE  pProgreeCb,
-		void* pData,
-		BOOL* pCancel,
-		DWORD flags);
 };
 
 

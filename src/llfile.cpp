@@ -29,6 +29,7 @@
 //              o = compare
 //              p = printf
 //              r = remove (delete)
+//              s = storage devices
 //              u = uninstall   
 //              w = where
 //
@@ -111,9 +112,13 @@
 #include "llfind.h"
 #include "llprintf.h"
 #include "llreplace.h"
+#include "llsize.h"
 
 #include <vector>
 #include <crtdbg.h>   // memory/heap debugger
+// _setmode
+#include <io.h>
+#include <fcntl.h>
 
 using namespace std;
 // ---------------------------------------------------------------------------
@@ -143,6 +148,7 @@ static const char sHelp[] =
 "    p    or printf     ; Print file names \n"
 "    lg   or llgrep     ; Grep find and replace \n"
 "    le   or llexec     ; Execute command on files \n"
+"    s    or llsize     ; List device size \n"
 "\n"   
 "  !0eExample:!0f\n"
 "    ld                 ; List Directory information \n"
@@ -153,10 +159,10 @@ static const char sHelp[] =
 
 
 // Possible commands (not all are implemented)
-enum Cmd { eNone, eCmp, eCopy, eDir, eDel, eExec, eFind, eMove, eWhere, ePrintf, eGrep, eInstall, eUninstall };
-char* CmdName[] = { 
+enum Cmd { eNone, eCmp, eCopy, eDir, eDel, eExec, eFind, eMove, eWhere, ePrintf, eGrep, eSize, eInstall, eUninstall };
+const char* CmdName[] = { 
     "None", "Compare", "Copy", "Dir", "Delete", "Execute", "Find", "Move", "Where",
-    "Printf", "Grep", "Install", "Uninstall" };
+    "Printf", "Grep", "Size", "Install", "Uninstall" };
 
 //  Association between names and commands.
 struct CmdAlias
@@ -197,6 +203,8 @@ static CmdAlias sCmdAlias[] =
     {"lg",      eGrep},
  //   {"grep",    eGrep},
     {"g",       eGrep},
+    {"s", eSize},
+    {"llsize", eSize},
     {"llinstall",eInstall},
     {"i",       eInstall},
 	{"llunstall",eUninstall},
@@ -266,6 +274,10 @@ int main(int argc, const char* argv[])
         // All 'CrtCheckMemory()' after every malloc/free
         _CrtSetDbgFlag( _CRTDBG_CHECK_ALWAYS_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
         _CrtCheckMemory( );
+
+        // Set the console mode to Unicode (UTF-16) to allow wcout to work correctly.
+        // Does not work in this app, use of fput causes assertion error: ((_textmode_safe(fn) == __crt_lowio_text_mode::ansi)
+        // _setmode(_fileno(stdout), _O_U16TEXT);
 #endif
 
     try
@@ -367,6 +379,9 @@ int main(int argc, const char* argv[])
             break;
         case eGrep:
             exitStatus = LLReplace::StaticRun(cmdOpts, passArgc, passArgv);
+            break;
+        case eSize:
+            exitStatus = LLSize::StaticRun(cmdOpts, passArgc, passArgv);
             break;
         case eInstall:
             {

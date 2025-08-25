@@ -61,7 +61,9 @@
 #define NOSYSPARAMSINFO
 #define NOWINABLE
 
+#define byte win_byte_override  // Fix for c++ v17
 #include <windows.h>
+#undef byte  
 #include <winioctl.h>
 #include <aclapi.h>
 #include <authz.h>
@@ -431,7 +433,7 @@ std::ostream& LLDir::ShowAttributes(
     else
     {
         char XX = LLDir::sConfig.m_attrFiller;
-        char* attrChr = LLDir::sConfig.m_attrChr;
+        const char* attrChr = LLDir::sConfig.m_attrChr;
         //                012345678901234
         char attrOut[] = "RHSDAdNTSrCOIEV";
         char* pA = attrOut;
@@ -1912,7 +1914,7 @@ int LLDir::ProcessEntry(
                     tr.pMultipleTrustee = NULL;
                     tr.TrusteeForm = TRUSTEE_IS_NAME;
                     tr.TrusteeType = TRUSTEE_IS_USER;
-                    tr.ptstrName = "CURRENT_USER";
+                    tr.ptstrName = (char*)"CURRENT_USER";
 
                     if (ERROR_SUCCESS ==
                         GetEffectiveRightsFromAcl(dacl, &tr, &access))
