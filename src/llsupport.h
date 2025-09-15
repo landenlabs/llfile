@@ -61,7 +61,7 @@
 #define QUOTE(x) Q(x)
 
  // C++ version _CPPLIB_VER 
-#define LLVERSION "v24.31s" LLBLDBITS LLCHAR " C++_" QUOTE(_CPPLIB_VER) " " __DATE__
+#define LLVERSION "v25.0914s" LLBLDBITS LLCHAR " C++_" QUOTE(_CPPLIB_VER) " " __DATE__
 
 
 #include "ll_stdhdr.h"

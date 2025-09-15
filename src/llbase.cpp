@@ -131,7 +131,7 @@ bool LLBase::ParseBaseCmds(const char*& cmdOpts)
         cmdOpts = LLSup::ParseNum(cmdOpts+1, m_limitOut, quitOptErrMsg);
         break;
     case 'r':   // Directory scan options
-        m_dirScan.m_recurse = true;
+        m_dirScan.m_recurse = ! m_dirScan.m_recurse;
         break;
     case 'T':   // -T[acm]<op><value>   ; Limit by Time a=access, c=creation, m=modified
                 // -T=[acm]<op><value>  ; Limit by Time a=access, c=creation, m=modified

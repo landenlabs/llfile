@@ -1067,7 +1067,7 @@ int LLDir::Run(const char* cmdOpts, int argc, const char* pDirs[])
             m_showUsageExt = true;
 
         case 'u':   // Disk usage
-            m_dirScan.m_recurse = true;
+            // m_dirScan.m_recurse = true;
             m_dirScan.m_addAllDepths = true;
             m_showUsage = true;
             m_onlyAttr = 0x000FFFFF;

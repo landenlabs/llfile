@@ -299,6 +299,10 @@
   <ItemGroup>
     <Manifest Include="..\..\..\..\..\Users\DennisLang\Downloads\llfile.manifest" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="landenlabs.ico" />
+    <Image Include="landenlabs.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

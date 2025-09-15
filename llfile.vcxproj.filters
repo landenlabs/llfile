@@ -193,4 +193,12 @@
   <ItemGroup>
     <Manifest Include="..\..\..\..\..\Users\DennisLang\Downloads\llfile.manifest" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="landenlabs.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="landenlabs.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
