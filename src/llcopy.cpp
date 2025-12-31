@@ -58,7 +58,7 @@ static const char sHelp[] =
 "                       ;  Default is no overwrite \n"
 "   -p                  ; Prompt before copy\n"
 "   -pp                 ; Prevent prompt on Override or readonly, just skip file \n"
-"   -P=<srcPathPat>     ; Optional regular expression pattern on source files\n"
+"   -P=<srcPathPat>     ; RegEx regular expression pattern on source files\n"
 "   -z                  ; Un/Compress (compressed file ends in .lzo) \n"
 "  !0eSource selection:!0f\n"
 "   -A=[nrhs]           ; Limit files by attribute (n=normal r=readonly, h=hidden, s=system)\n"

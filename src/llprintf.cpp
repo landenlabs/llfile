@@ -100,7 +100,7 @@ static const char sHelp[] =
 "                       ;  or input is from file directory scan (trailing arguments) \n"
 "                       ; Use quotes to include spaces in format \n"
 "                       ;  or a string string as in \"-pHello World\\n\"  \n"
-"   -P=<srcPathPat>     ; Regular expression pattern on source files path or env items\n"
+"   -P=<srcPathPat>     ; RegEx pattern on source files path or env items, ex: -P=\\\\build\\\\.*[.]png  \n"
 "   -s=<fmt>            ; Scan input with regex\n"
 "   -l=<timeFmt>        ; strftime format using local time\n"
 "   -z=<timeFmt>        ; strftime format using zTime\n"

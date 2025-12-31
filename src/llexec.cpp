@@ -70,7 +70,7 @@ static const char sHelp[] =
 "   !02-I=!0f<file>           ; Read list of files from <file> or - for stdin \n"
 "   !02-n!0f                  ; No execution\n"
 "   !02-p!0f                  ; prompt before executing command\n"
-"   !02-P=!0f<srcPathPat>     ; Optional regular expression pattern on source files full path\n"
+"   !02-P=!0f<srcPathPat>     ; RegEx pattern on source files full path, ex:-P=\\\\build\\\\.*[.]png  \n"
 "   !02-q!0f                  ; Quiet, default is echo command\n"
 "   !02-Q!0f                  ; Quote argument before executing \n"
 "   !02-r!0f                  ; Recurse into subdirectories\n"

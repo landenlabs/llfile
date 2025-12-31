@@ -59,7 +59,7 @@ static const char sHelp[] =
 "   -I=<file>           ; Read list of files from this file\n"
 "   -p                  ; Search PATH environment directories for pattern\n"
 "   -p                  ; Short cut for -e=PATH, search path \n"
-"   -P=<srcPathPat>     ; Optional regular expression pattern on source files full path\n"
+"   -P=<srcPathPat>     ; RegEx pattern on source files full path, ex: -P=\\\\build\\\\.*[.]png  \n"
 "   -q                  ; Quiet, default is echo command\n"
 "   -Q=n                ; Quit after 'n' matches\n"
 "   -s                  ; Show file size size\n"

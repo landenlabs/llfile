@@ -181,7 +181,7 @@ static const char sHelp[] =
 "                       ;  First Line Seperator:<char> like , \n"
 "                       ;  Remainder <findPat><seperator><replacePat>[,<filePathPat>]  \n"
 "   -p                  ; Short cut for -e=PATH, search path \n"
-"   -P=<srcPathPat>     ; Optional regular expression pattern on source files full path\n"
+"   -P=<srcPathPat>     ; RegEx pattern on source files full path, ex: -P=\\\\build\\\\.*[.]png \n"
 "   -q                  ; Quiet, default is echo command\n"
 "   -Q=n                ; Quit after 'n' file matches\n"
 "   -r                  ; Recurse into subdirectories\n"

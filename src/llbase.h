@@ -249,7 +249,7 @@ public:
     bool                m_byLine;           // true if grep pattern contains ^ or $
     bool                m_backRef;
 
-    std::regex          m_grepSrcPathPat;   // -P=<filePattern>
+    std::regex          m_grepSrcPathPat;   // -P=<filePattern>  ex:  -P=\\\\build\\\\.*[.]png 
     std::regex          m_grepLinePat;      // -G=<fileContentPattern>
     std::string         m_grepLineStr;
 

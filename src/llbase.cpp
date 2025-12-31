@@ -119,7 +119,7 @@ bool LLBase::ParseBaseCmds(const char*& cmdOpts)
             m_promptAns = 'p';      // -pp
         m_prompt = true;
         break;
-     case 'P':   // grep pattern on source path  -P=<grepPattern>
+     case 'P':   // RegEx pattern on source path  -P=<grepPattern>
         cmdOpts = LLSup::ParseString(cmdOpts+1, str, optGrepMsg);
         if (str.length() != 0)
             m_grepSrcPathPat= str;
