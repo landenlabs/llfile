@@ -1420,7 +1420,7 @@ const char* ParseOutput(const char* cmdOpts, bool tee)
  
             fflush(stdout);
             FILE* fout = _fsopen(outFile.c_str(), "a", _SH_DENYNO);
-            int err = _dup2(fileno(fout), 1); //  STDOUT_FILENO);
+            int err = _dup2(_fileno(fout), 1); //  STDOUT_FILENO);
         } 
         else
             perror(outFile.c_str());

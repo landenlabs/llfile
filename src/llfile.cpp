@@ -19,6 +19,7 @@
 //  select which command mode to run in.
 //
 //      1. Command switch -x[c|d|r|e|f|w|p|o|i]
+// 
 //              c = copy
 //              d = dir
 //              e = execute
@@ -28,6 +29,7 @@
 //              m = move
 //              o = compare
 //              p = printf
+//              q = query (info) about file
 //              r = remove (delete)
 //              s = storage devices
 //              u = uninstall   
@@ -110,6 +112,7 @@
 #include "llexec.h"
 #include "llmove.h"
 #include "llfind.h"
+#include "llinfo.h"
 #include "llprintf.h"
 #include "llreplace.h"
 #include "llsize.h"
@@ -145,9 +148,10 @@ static const char sHelp[] =
 "    lr   or lldel      ; Remove files \n"
 "    lm   or llmove     ; Move (rename) files \n"
 "    lf   or llfind     ; Find files \n"
-"    p    or printf     ; Print file names \n"
 "    lg   or llgrep     ; Grep find and replace \n"
 "    le   or llexec     ; Execute command on files \n"
+"    p    or printf     ; Print file names \n"
+"    x    or llquery    ; Query (info) about executables \n"
 "    s    or llsize     ; List device size \n"
 "\n"   
 "  !0eExample:!0f\n"
@@ -159,10 +163,10 @@ static const char sHelp[] =
 
 
 // Possible commands (not all are implemented)
-enum Cmd { eNone, eCmp, eCopy, eDir, eDel, eExec, eFind, eMove, eWhere, ePrintf, eGrep, eSize, eInstall, eUninstall };
+enum Cmd { eNone, eCmp, eCopy, eDir, eDel, eExec, eFind, eMove, eWhere, ePrintf, eGrep, eSize, eQuery, eInstall, eUninstall };
 const char* CmdName[] = { 
     "None", "Compare", "Copy", "Dir", "Delete", "Execute", "Find", "Move", "Where",
-    "Printf", "Grep", "Size", "Install", "Uninstall" };
+    "Printf", "Grep", "Size", "Query", "Install", "Uninstall" };
 
 //  Association between names and commands.
 struct CmdAlias
@@ -203,6 +207,8 @@ static CmdAlias sCmdAlias[] =
     {"lg",      eGrep},
  //   {"grep",    eGrep},
     {"g",       eGrep},
+    {"lx", eQuery},
+    {"x", eQuery},
     {"s", eSize},
     {"llsize", eSize},
     {"llinstall",eInstall},
@@ -382,6 +388,9 @@ int main(int argc, const char* argv[])
             break;
         case eSize:
             exitStatus = LLSize::StaticRun(cmdOpts, passArgc, passArgv);
+            break;
+        case eQuery:
+            exitStatus = LLInfo::StaticRun(cmdOpts, passArgc, passArgv);
             break;
         case eInstall:
             {

@@ -392,6 +392,7 @@ static FILETIME operator-(const FILETIME& leftFt, const FILETIME& rightFt)
     return fTime;
 }
 
+#if 0
 // ---------------------------------------------------------------------------
 // returns a UNIX-like timestamp (in seconds since 1970) with sub-second resolution.
 static double time_d(const FILETIME& ft)
@@ -400,11 +401,12 @@ static double time_d(const FILETIME& ft)
     const __int64* val = (const __int64*)&ft;
     return static_cast<double>(*val) / 10000000.0 - 11644473600.0;   // epoch is Jan. 1, 1601: 134774 days to Jan. 1, 1970
 }
+#endif
  
 // ---------------------------------------------------------------------------
 static std::ostream& Format(std::ostream& out, const FILETIME& utcFT)
 {
-    FILETIME   locTmFT;
+    // FILETIME   locTmFT;
     SYSTEMTIME sysTime;
 
 
@@ -446,7 +448,7 @@ static std::ostream& Format(std::ostream& out, const FILETIME& utcFT)
 // ---------------------------------------------------------------------------
 const char* relative(const char* fullPath, const char* cwd) {
     unsigned cwdLen = strlen(cwd);
-    return (strnicmp(fullPath, cwd, cwdLen) == 0)
+    return (_strnicmp(fullPath, cwd, cwdLen) == 0)
         ? fullPath + cwdLen + 1
         : fullPath;
 }

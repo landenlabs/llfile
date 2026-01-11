@@ -234,6 +234,7 @@
     <ClCompile Include="src\llexec.cpp" />
     <ClCompile Include="src\llfile.cpp" />
     <ClCompile Include="src\llfind.cpp" />
+    <ClCompile Include="src\llinfo.cpp" />
     <ClCompile Include="src\llmove.cpp" />
     <ClCompile Include="src\llmsg.cpp" />
     <ClCompile Include="src\llpath.cpp" />
