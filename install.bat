@@ -24,7 +24,7 @@ rmdir /s Obj  2> nul
 @echo.
 @echo ---- Build Release llfile
 @rem %devenv% llfile.sln /Project llfile /Build "Release|x64"  /Projectconfig "Release|x64"
-"%msbuild%" llfile.sln -p:Configuration="Release";Platform=x64 -verbosity:minimal  -detailedSummary:True
+"%msbuild%" llfile.sln -m -p:Configuration="Release";Platform=x64 -verbosity:minimal  -detailedSummary:True
 
 @echo.
 @echo ---- Build done 
