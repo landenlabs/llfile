@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-xx -G=32 e:\opt\bin\llrename.exe</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-hp  README.md help-doc\ld-color-softlink.png</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArgumentsHistory>-xs|-xq e:\opt\bin\llrename.exe|-xx e:\opt\bin\llrename.exe|-xx -G=32 e:\opt\bin\llrename.exe|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerCommandArgumentsHistory>-xs|-xq e:\opt\bin\llrename.exe|-xx e:\opt\bin\llrename.exe|-xx -G=32 e:\opt\bin\llrename.exe|-hp  README.md help-doc\ld-color-softlink.png|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
 </Project>

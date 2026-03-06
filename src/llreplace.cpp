@@ -132,7 +132,7 @@ int LLReplace::ZipReadFile(
 
     entry->SetPassword(password);
     std::istream* decompressStream = entry->GetDecompressionStream();
-    assert(decompressStream == nullptr);
+    assert(decompressStream != nullptr);
 
     std::string line;
     while (std::getline(*decompressStream, line))
@@ -288,18 +288,20 @@ static std::string ConvertSpecialChar(std::string& inOut)
 			case '5':
 			case '6':
 			case '7':
-				sscanf(inPtr,"%3o%n",&x,&n);
-				inPtr += n-1;
-				*outPtr++ = (char)x;
+                if (1 == sscanf(inPtr, "%3o%n", &x, &n)) {
+                    inPtr += n - 1;
+                    *outPtr++ = (char)x;
+                }
 				break;
 			case 'x':								// hexadecimal
-				sscanf(inPtr+1,"%2x%n",&x,&n);
-				if (n>0)
-				{
-					inPtr += n;
-					*outPtr++ = (char)x;
-					break;
-				}
+                if (1 == sscanf(inPtr + 1, "%2x%n", &x, &n)) {
+                    if (n > 0)
+                    {
+                        inPtr += n;
+                        *outPtr++ = (char)x;
+                        break;
+                    }
+                }
 				// seep through
 			default:  
 				throw( "Warning: unrecognized escape sequence" );
@@ -324,7 +326,7 @@ static std::string ConvertSpecialChar(std::string& inOut)
 // ---------------------------------------------------------------------------
 // Return true if character in pattern string is part of regular expression
 // and not escaped out or inside a closour group []
-static bool isPattern(std::string str, int pos)
+static bool isPattern(const std::string& str, int pos)
 {
     if (pos < 0)
         return false;

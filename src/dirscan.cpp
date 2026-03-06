@@ -467,7 +467,7 @@ void DirectoryScan::Init(
     m_dirFilters.clear();
 
     // Set default Directory and File filter.
-    const char* defDir = pCwd;
+    const char* defDir = "."; // was set to  pCwd;
     m_fileFilter  = "*";
     m_abort       = false;
 
