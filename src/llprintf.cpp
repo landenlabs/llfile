@@ -1158,7 +1158,8 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
                 if (inList.empty()) 
                 {
                     // Why are we calling print with no data ?  is it for a header ?
-                    // PrintFormatted(m_printFmt, inList, ++nLine);
+                    // Because you can use it to prent a message, like p -p="hello world\n" 
+                    PrintFormatted(m_printFmt, inList, ++nLine);
                 } 
                 else 
                 {
