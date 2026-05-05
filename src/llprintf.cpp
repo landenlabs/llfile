@@ -8,7 +8,7 @@
 //
 // ----- License ----
 //
-// Copyright (c) 2015 Dennis Lang
+// Copyright (c) 2026 Dennis Lang
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -154,20 +154,20 @@ static const char sHelp[] =
 "\t%b Abbreviated month name\n"
 "\t%B Full month name \n"
 "\t%c Date and time representation appropriate for locale\n"
-"\t%d Day of month as decimal number (01 – 31) \n"
-"\t%H Hour in 24-hour format (00 – 23)         \n"
-"\t%I Hour in 12-hour format (01 – 12)         \n"
-"\t%j Day of year as decimal number (001 – 366)\n"
-"\t%m Month as decimal number (01 – 12)        \n"
-"\t%M Minute as decimal number (00 – 59)       \n"
+"\t%d Day of month as decimal number (01 ï¿½ 31) \n"
+"\t%H Hour in 24-hour format (00 ï¿½ 23)         \n"
+"\t%I Hour in 12-hour format (01 ï¿½ 12)         \n"
+"\t%j Day of year as decimal number (001 ï¿½ 366)\n"
+"\t%m Month as decimal number (01 ï¿½ 12)        \n"
+"\t%M Minute as decimal number (00 ï¿½ 59)       \n"
 "\t%p Current locale's A.M./P.M. indicator for 12-hour clock\n"
-"\t%S Second as decimal number (00 – 59)       \n"
-"\t%U Week of year as decimal number, with Sunday as first day of week (00 – 53) \n"
-"\t%w Weekday as decimal number (0 – 6; Sunday is 0) \n"
-"\t%W Week of year as decimal number, with Monday as first day of week (00 – 53) \n"
+"\t%S Second as decimal number (00 ï¿½ 59)       \n"
+"\t%U Week of year as decimal number, with Sunday as first day of week (00 ï¿½ 53) \n"
+"\t%w Weekday as decimal number (0 ï¿½ 6; Sunday is 0) \n"
+"\t%W Week of year as decimal number, with Monday as first day of week (00 ï¿½ 53) \n"
 "\t%x Date representation for current locale   \n"
 "\t%X Time representation for current locale   \n"
-"\t%y Year without century, as decimal number (00 – 99)\n"
+"\t%y Year without century, as decimal number (00 ï¿½ 99)\n"
 "\t%Y Year with century, as decimal number     \n"
 "\t%z, %Z Either the time-zone name or time zone abbreviation\n"
 "\t%%  Percent sign \n"
