@@ -148,11 +148,6 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
     </Link>
-    <Manifest>
-      <AdditionalManifestFiles>llfile.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
-      <AssemblyIdentity>
-      </AssemblyIdentity>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -214,91 +209,84 @@
       <TurnOffAssemblyGeneration>
       </TurnOffAssemblyGeneration>
     </Link>
-    <Manifest>
-      <AssemblyIdentity>
-      </AssemblyIdentity>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Compress\compress.cpp" />
-    <ClCompile Include="src\Compress\minilzo.c" />
-    <ClCompile Include="src\dirscan.cpp" />
-    <ClCompile Include="src\getopt.cpp" />
-    <ClCompile Include="src\hash.cpp" />
-    <ClCompile Include="src\llbase.cpp" />
-    <ClCompile Include="src\llcmp.cpp" />
-    <ClCompile Include="src\llcopy.cpp" />
-    <ClCompile Include="src\lldel.cpp" />
-    <ClCompile Include="src\lldir.cpp" />
-    <ClCompile Include="src\lldirSort.cpp" />
-    <ClCompile Include="src\llexec.cpp" />
-    <ClCompile Include="src\llfile.cpp" />
-    <ClCompile Include="src\llfind.cpp" />
-    <ClCompile Include="src\llinfo.cpp" />
-    <ClCompile Include="src\llmove.cpp" />
-    <ClCompile Include="src\llmsg.cpp" />
-    <ClCompile Include="src\llpath.cpp" />
-    <ClCompile Include="src\llprintf.cpp" />
-    <ClCompile Include="src\llreplace.cpp" />
-    <ClCompile Include="src\llsize.cpp" />
-    <ClCompile Include="src\llsupport.cpp" />
-    <ClCompile Include="src\LocaleFmt.cpp" />
-    <ClCompile Include="src\llstring.cpp" />
-    <ClCompile Include="src\MemMapFile.cpp" />
-    <ClCompile Include="src\Security.cpp" />
+    <ClCompile Include="..\llfile\Compress\compress.cpp" />
+    <ClCompile Include="..\llfile\Compress\minilzo.c" />
+    <ClCompile Include="..\llfile\dirscan.cpp" />
+    <ClCompile Include="..\llfile\getopt.cpp" />
+    <ClCompile Include="..\llfile\hash.cpp" />
+    <ClCompile Include="..\llfile\llbase.cpp" />
+    <ClCompile Include="..\llfile\llcmp.cpp" />
+    <ClCompile Include="..\llfile\llcopy.cpp" />
+    <ClCompile Include="..\llfile\lldel.cpp" />
+    <ClCompile Include="..\llfile\lldir.cpp" />
+    <ClCompile Include="..\llfile\lldirSort.cpp" />
+    <ClCompile Include="..\llfile\llexec.cpp" />
+    <ClCompile Include="..\llfile\llfile.cpp" />
+    <ClCompile Include="..\llfile\llfind.cpp" />
+    <ClCompile Include="..\llfile\llinfo.cpp" />
+    <ClCompile Include="..\llfile\llmove.cpp" />
+    <ClCompile Include="..\llfile\llmsg.cpp" />
+    <ClCompile Include="..\llfile\llpath.cpp" />
+    <ClCompile Include="..\llfile\llprintf.cpp" />
+    <ClCompile Include="..\llfile\llreplace.cpp" />
+    <ClCompile Include="..\llfile\llsize.cpp" />
+    <ClCompile Include="..\llfile\llsupport.cpp" />
+    <ClCompile Include="..\llfile\LocaleFmt.cpp" />
+    <ClCompile Include="..\llfile\llstring.cpp" />
+    <ClCompile Include="..\llfile\MemMapFile.cpp" />
+    <ClCompile Include="..\llfile\Security.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\comma.h" />
-    <ClInclude Include="src\Compress\minilzo.h" />
-    <ClInclude Include="src\dirscan.h" />
-    <ClInclude Include="src\getopt.h" />
-    <ClInclude Include="src\Handle.h" />
-    <ClInclude Include="src\hash.h" />
-    <ClInclude Include="src\llbase.h" />
-    <ClInclude Include="src\llcmp.h" />
-    <ClInclude Include="src\llcopy.h" />
-    <ClInclude Include="src\lldel.h" />
-    <ClInclude Include="src\lldir.h" />
-    <ClInclude Include="src\lldirSort.h" />
-    <ClInclude Include="src\llerrMsgs.h" />
-    <ClInclude Include="src\llexec.h" />
-    <ClInclude Include="src\llfind.h" />
-    <ClInclude Include="src\llmove.h" />
-    <ClInclude Include="src\llmsg.h" />
-    <ClInclude Include="src\llpath.h" />
-    <ClInclude Include="src\llreplace.h" />
-    <ClInclude Include="src\llsize.h" />
-    <ClInclude Include="src\llstring.h" />
-    <ClInclude Include="src\llprintf.h" />
-    <ClInclude Include="src\llsupport.h" />
-    <ClInclude Include="src\ll_stdhdr.h" />
-    <ClInclude Include="src\LocaleFmt.h" />
-    <ClInclude Include="src\MemMapFile.h" />
-    <ClInclude Include="src\Security.h" />
+    <ClInclude Include="..\llfile\comma.h" />
+    <ClInclude Include="..\llfile\Compress\minilzo.h" />
+    <ClInclude Include="..\llfile\dirscan.h" />
+    <ClInclude Include="..\llfile\getopt.h" />
+    <ClInclude Include="..\llfile\Handle.h" />
+    <ClInclude Include="..\llfile\hash.h" />
+    <ClInclude Include="..\llfile\llbase.h" />
+    <ClInclude Include="..\llfile\llcmp.h" />
+    <ClInclude Include="..\llfile\llcopy.h" />
+    <ClInclude Include="..\llfile\lldel.h" />
+    <ClInclude Include="..\llfile\lldir.h" />
+    <ClInclude Include="..\llfile\lldirSort.h" />
+    <ClInclude Include="..\llfile\llerrMsgs.h" />
+    <ClInclude Include="..\llfile\llexec.h" />
+    <ClInclude Include="..\llfile\llfind.h" />
+    <ClInclude Include="..\llfile\llmove.h" />
+    <ClInclude Include="..\llfile\llmsg.h" />
+    <ClInclude Include="..\llfile\llpath.h" />
+    <ClInclude Include="..\llfile\llreplace.h" />
+    <ClInclude Include="..\llfile\llsize.h" />
+    <ClInclude Include="..\llfile\llstring.h" />
+    <ClInclude Include="..\llfile\llprintf.h" />
+    <ClInclude Include="..\llfile\llsupport.h" />
+    <ClInclude Include="..\llfile\ll_stdhdr.h" />
+    <ClInclude Include="..\llfile\LocaleFmt.h" />
+    <ClInclude Include="..\llfile\MemMapFile.h" />
+    <ClInclude Include="..\llfile\Security.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="llfile.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="llfile-install.bat" />
+    <None Include="..\install.bat" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="ZipLib\extlibs\bzip2\bzip2.vcxproj">
+    <ProjectReference Include="..\ZipLib\extlibs\bzip2\bzip2.vcxproj">
       <Project>{dbbf348d-c221-4f2e-8a0d-24efa0d98e71}</Project>
     </ProjectReference>
-    <ProjectReference Include="ZipLib\extlibs\lzma\lzma.vcxproj">
+    <ProjectReference Include="..\ZipLib\extlibs\lzma\lzma.vcxproj">
       <Project>{7ead1358-3e72-4fb6-a212-25d462b5c1e9}</Project>
     </ProjectReference>
-    <ProjectReference Include="ZipLib\extlibs\zlib\zlib.vcxproj">
+    <ProjectReference Include="..\ZipLib\extlibs\zlib\zlib.vcxproj">
       <Project>{baeb16b3-db4c-432f-9e6a-2acadea0691d}</Project>
     </ProjectReference>
-    <ProjectReference Include="ZipLib\ZipLib.vcxproj">
+    <ProjectReference Include="..\ZipLib\ZipLib.vcxproj">
       <Project>{5c9fd859-ddf9-4510-8397-b329b0ae8c48}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="..\..\..\..\..\Users\DennisLang\Downloads\llfile.manifest" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="landenlabs.ico" />

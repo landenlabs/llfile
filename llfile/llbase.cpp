@@ -90,8 +90,14 @@ bool LLBase::ParseBaseCmds(const char*& cmdOpts)
         break;
     case 'G':   // grep pattern  -G=<grepPattern>   , Execute only if file contains grepPattern
         cmdOpts = LLSup::ParseString(cmdOpts+1, str, optGrepMsg);
-        if (str.length() != 0)
-            m_grepLinePat = m_grepLineStr = str;
+        if (str.length() != 0) {
+            if (m_grepLineStr.empty())
+                m_grepLinePat = m_grepLineStr = str;
+            else {
+				std::cerr << "Multiple grep patterns not supported, ignoring: " << str << "\n";
+                return false;
+            }
+        }
         break;
     case 'g':   // grep range -g=<grepOptions>   default is entire file 
         // ex -G=L10M10HfB1A2
@@ -121,8 +127,10 @@ bool LLBase::ParseBaseCmds(const char*& cmdOpts)
         break;
      case 'P':   // RegEx pattern on source path  -P=<grepPattern>
         cmdOpts = LLSup::ParseString(cmdOpts+1, str, optGrepMsg);
-        if (str.length() != 0)
-            m_grepSrcPathPat= str;
+        if (str.length() != 0) {
+            std::regex pattern(str);
+            m_grepSrcPathPat.push_back(pattern);
+        }
         break;
     case 'q':   // quiet
         m_echo = false;
@@ -208,10 +216,6 @@ bool LLBase::FilterDir(
 		
 		if (!LLSup::PatternListMatches(m_includeDirList, pFileData->cFileName, true))
 			return false;
-
-		if (m_grepSrcPathPat.flags() != 0 &&
-			!std::regex_search(m_srcPath.begin(), m_srcPath.end(), m_grepSrcPathPat))
-			return false;
     }
     else
     {
@@ -219,12 +223,12 @@ bool LLBase::FilterDir(
 
         if ( !LLSup::PatternListMatches(m_includeFileList, pFileData->cFileName, true))
             return false;
-        if (m_grepSrcPathPat.flags() != 0 &&
-            !std::regex_search(m_srcPath.begin(), m_srcPath.end(), m_grepSrcPathPat))
-            return false;
         if ( !SizeOperation(m_fileSize, m_onlySizeOp, m_onlySize))
             return false;
     }
+
+    if (!LLSup::PatternListMatches(m_grepSrcPathPat, m_srcPath, true))
+        return false;
 
     if ( !LLSup::CompareDeviceBits(pFileData->dwFileAttributes, m_onlyAttr))
         return false;

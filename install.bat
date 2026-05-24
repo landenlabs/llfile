@@ -16,36 +16,36 @@ set msbuild=G:\opt\VisualStudio\18\Community\MSBuild\Current\Bin\MSBuild.exe
 )
 
 @echo ---- Clean Release llfile
-del Bin\x64\Release\llfile.exe 2> nul
-lldu -sum Obj\x64\* 2> nul 
-rmdir /s Obj  2> nul
-@rem %msbuild% llfile.sln  -t:Clean
+del llfile-ms\Bin\x64\Release\llfile.exe 2> nul
+lldu -sum llfile-ms\Obj\x64\* 2> nul
+rmdir /s llfile-ms\Obj  2> nul
+@rem %msbuild% llfile-ms\llfile.sln  -t:Clean
 
 @echo.
 @echo ---- Build Release llfile
-@rem %devenv% llfile.sln /Project llfile /Build "Release|x64"  /Projectconfig "Release|x64"
-"%msbuild%" llfile.sln -m -p:Configuration="Release";Platform=x64 -verbosity:minimal  -detailedSummary:True
+@rem %devenv% llfile-ms\llfile.sln /Project llfile /Build "Release|x64"  /Projectconfig "Release|x64"
+"%msbuild%" llfile-ms\llfile.sln -m -p:Configuration="Release";Platform=x64 -verbosity:minimal  -detailedSummary:True
 
 @echo.
 @echo ---- Build done 
-if not exist "Bin\x64\Release\llfile.exe" (
+if not exist "llfile-ms\Bin\x64\Release\llfile.exe" (
    echo Failed to build llfile.exe 
    goto _end
 )
-dir Bin\x64\Release\llfile.exe
+dir llfile-ms\Bin\x64\Release\llfile.exe
 
 @echo ---- Uninstall llfile
-Bin\x64\Release\llfile.exe -xu %dstdir% > nul
-Bin\x64\Release\llfile.exe -xr -f %dstdir%\llfile.exe > nul
-Bin\x64\Release\llfile.exe %dstdir%\*.exe
+llfile-ms\Bin\x64\Release\llfile.exe -xu %dstdir% > nul
+llfile-ms\Bin\x64\Release\llfile.exe -xr -f %dstdir%\llfile.exe > nul
+llfile-ms\Bin\x64\Release\llfile.exe %dstdir%\*.exe
 
 @echo ---- Copy Release to %dstdir%
-copy Bin\x64\Release\llfile.exe %dstdir%\llfile.exe
-dir  Bin\x64\Release\llfile.exe %dstdir%\llfile.exe
+copy llfile-ms\Bin\x64\Release\llfile.exe %dstdir%\llfile.exe
+dir  llfile-ms\Bin\x64\Release\llfile.exe %dstdir%\llfile.exe
 
 :: @echo
 :: @echo Compare md5 hash
-:: cmp -h Bin\x64\Release\llfile.exe %dstdir%\llfile.exe
+:: cmp -h llfile-ms\Bin\x64\Release\llfile.exe %dstdir%\llfile.exe
 
 :: @echo.
 :: @echo List all llfile.exe

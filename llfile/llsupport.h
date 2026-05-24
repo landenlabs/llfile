@@ -39,6 +39,7 @@
 #include <list>
 #include <set>
 #include <string>
+#include <regex>
 #define byte win_byte_override  // Fix for c++ v17
 #include <windows.h>
 #undef byte  
@@ -61,7 +62,8 @@
 #define QUOTE(x) Q(x)
 
  // C++ version _CPPLIB_VER 
-#define LLVERSION "v26.0306s" LLBLDBITS LLCHAR " C++_" QUOTE(_CPPLIB_VER) " " __DATE__
+#define VERSION "v6.05.25"
+#define LLVERSION VERSION LLBLDBITS LLCHAR " C++_" QUOTE(_CPPLIB_VER) " " __DATE__
 
 
 #include "ll_stdhdr.h"
@@ -201,6 +203,7 @@ bool SetFileModTime(const char* dstPath, const FILETIME& fileUtcTime);
 int FileTimeDifference(const FILETIME& ft1, const FILETIME& ft2, const ULONGLONG& resolution = 500e9);
 
 typedef std::vector<std::string> StringList;
+typedef std::vector<std::regex> RegexList;
 
 //  Parse -F or -X*.exe,*.lib;p???.dat,foo.bar
 const char* ParseList(const char* cmdOpts, StringList& strList, const char* emptyErrMsg /* = NULL */);
@@ -208,6 +211,9 @@ const char* ParseList(const char* cmdOpts, StringList& strList, const char* empt
 // Return true if file matches pattern in list.
 // Return emptyListResult if patList is empty.
 bool PatternListMatches(const StringList& patList, const char* fileName, bool emptyListResult = false);
+
+bool PatternListMatches(const RegexList& patList, const std::string& str, bool emptyResult = false);
+
 
 // Parse:  -A[nrhs]     ; show only (n=normal r=readonly, h=hidden, s=system)\n"
 const char* ParseAttributes(const char* cmdOpts,  DWORD& attributes, const char* errMsg);

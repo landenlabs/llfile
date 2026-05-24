@@ -1260,6 +1260,21 @@ bool PatternListMatches(const StringList& patList, const char* fileName, bool em
     return false;
 }
 
+bool PatternListMatches(const RegexList& patList, const std::string& str, bool emptyResult)
+{
+    if (patList.empty())
+        return emptyResult;
+
+    for (int lstIdx = patList.size() - 1; lstIdx >= 0; lstIdx--)
+    {
+        if (std::regex_search(str.begin(), str.end(), patList[lstIdx]))
+            return true;
+    }
+
+    return false;
+   
+}
+
 // ---------------------------------------------------------------------------
 // Parse:  -A=[nrhs]     ; show only (n=normal r=readonly, h=hidden, s=system)\n"
 const char* ParseAttributes(const char* cmdOpts,  DWORD& attributes, const char* errMsg)

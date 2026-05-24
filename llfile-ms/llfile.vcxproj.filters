@@ -18,173 +18,173 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\dirscan.cpp">
+    <ClCompile Include="..\llfile\dirscan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llcmp.cpp">
+    <ClCompile Include="..\llfile\llcmp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llcopy.cpp">
+    <ClCompile Include="..\llfile\llcopy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\lldel.cpp">
+    <ClCompile Include="..\llfile\lldel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\lldir.cpp">
+    <ClCompile Include="..\llfile\lldir.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\lldirSort.cpp">
+    <ClCompile Include="..\llfile\lldirSort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llexec.cpp">
+    <ClCompile Include="..\llfile\llexec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llfile.cpp">
+    <ClCompile Include="..\llfile\llfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llfind.cpp">
+    <ClCompile Include="..\llfile\llfind.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llmove.cpp">
+    <ClCompile Include="..\llfile\llmove.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llprintf.cpp">
+    <ClCompile Include="..\llfile\llprintf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llsupport.cpp">
+    <ClCompile Include="..\llfile\llsupport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\LocaleFmt.cpp">
+    <ClCompile Include="..\llfile\LocaleFmt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Compress\compress.cpp">
+    <ClCompile Include="..\llfile\Compress\compress.cpp">
       <Filter>compress</Filter>
     </ClCompile>
-    <ClCompile Include="src\Compress\minilzo.c">
+    <ClCompile Include="..\llfile\Compress\minilzo.c">
       <Filter>compress</Filter>
     </ClCompile>
-    <ClCompile Include="src\Security.cpp">
+    <ClCompile Include="..\llfile\Security.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llpath.cpp">
+    <ClCompile Include="..\llfile\llpath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llbase.cpp">
+    <ClCompile Include="..\llfile\llbase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llstring.cpp">
+    <ClCompile Include="..\llfile\llstring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llmsg.cpp">
+    <ClCompile Include="..\llfile\llmsg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\getopt.cpp">
+    <ClCompile Include="..\llfile\getopt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\hash.cpp">
+    <ClCompile Include="..\llfile\hash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llreplace.cpp">
+    <ClCompile Include="..\llfile\llreplace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\MemMapFile.cpp">
+    <ClCompile Include="..\llfile\MemMapFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llsize.cpp">
+    <ClCompile Include="..\llfile\llsize.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\llinfo.cpp">
+    <ClCompile Include="..\llfile\llinfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\comma.h">
+    <ClInclude Include="..\llfile\comma.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\dirscan.h">
+    <ClInclude Include="..\llfile\dirscan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\getopt.h">
+    <ClInclude Include="..\llfile\getopt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llcmp.h">
+    <ClInclude Include="..\llfile\llcmp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llcopy.h">
+    <ClInclude Include="..\llfile\llcopy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\lldel.h">
+    <ClInclude Include="..\llfile\lldel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\lldir.h">
+    <ClInclude Include="..\llfile\lldir.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\lldirSort.h">
+    <ClInclude Include="..\llfile\lldirSort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llexec.h">
+    <ClInclude Include="..\llfile\llexec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llfind.h">
+    <ClInclude Include="..\llfile\llfind.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llmove.h">
+    <ClInclude Include="..\llfile\llmove.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llprintf.h">
+    <ClInclude Include="..\llfile\llprintf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llsupport.h">
+    <ClInclude Include="..\llfile\llsupport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\LocaleFmt.h">
+    <ClInclude Include="..\llfile\LocaleFmt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Compress\minilzo.h">
+    <ClInclude Include="..\llfile\Compress\minilzo.h">
       <Filter>compress</Filter>
     </ClInclude>
-    <ClInclude Include="src\Security.h">
+    <ClInclude Include="..\llfile\Security.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llerrMsgs.h">
+    <ClInclude Include="..\llfile\llerrMsgs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llstring.h">
+    <ClInclude Include="..\llfile\llstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llpath.h">
+    <ClInclude Include="..\llfile\llpath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llbase.h">
+    <ClInclude Include="..\llfile\llbase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llmsg.h">
+    <ClInclude Include="..\llfile\llmsg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ll_stdhdr.h">
+    <ClInclude Include="..\llfile\ll_stdhdr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\hash.h">
+    <ClInclude Include="..\llfile\hash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llreplace.h">
+    <ClInclude Include="..\llfile\llreplace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\MemMapFile.h">
+    <ClInclude Include="..\llfile\MemMapFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Handle.h">
+    <ClInclude Include="..\llfile\Handle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\llsize.h">
+    <ClInclude Include="..\llfile\llsize.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="llfile-install.bat">
+    <None Include="..\install.bat">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -192,9 +192,6 @@
     <ResourceCompile Include="llfile.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="..\..\..\..\..\Users\DennisLang\Downloads\llfile.manifest" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="landenlabs.ico">

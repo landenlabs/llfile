@@ -1058,9 +1058,7 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
                 while (*pEnvList)
                 {
                     std::string envItem = pEnvList;
-                    if (Count(envItem, '=') == 1 &&
-						(m_grepSrcPathPat.flags() == 0 ||
-                        std::regex_search(envItem.begin(), envItem.end(), m_grepSrcPathPat)))
+                    if (Count(envItem, '=') == 1 && !LLSup::PatternListMatches(m_grepSrcPathPat, envItem, true))
                         inList.push(envItem);
                     pEnvList += envItem.length() + 1;
                 }
@@ -1274,9 +1272,8 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
             StringQueue matchResults;
             std::string listItem = inList.front();
             inList.pop();
-
-            if (m_grepSrcPathPat.flags() == 0 ||
-                std::regex_search(listItem.begin(), listItem.end(), m_grepSrcPathPat))
+            
+            if (!LLSup::PatternListMatches(m_grepSrcPathPat, listItem, true))
             {
                 matchResults.push(listItem);
                 SlitOnSeparators(matchResults, m_separators);

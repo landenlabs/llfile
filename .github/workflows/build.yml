@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    tags: [ 'v*' ]
 
 jobs:
   build-windows:
@@ -14,7 +14,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build
-        run: msbuild llfile.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
+        run: msbuild llfile-ms\llfile.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
 
       - name: Stage artifact
         shell: pwsh
@@ -39,7 +39,18 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
 
-      - name: Release
+      - name: Release (tagged)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          prerelease: false
+          files: |
+            windows-binary/llfile.exe
+
+      - name: Release (latest)
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
