@@ -59,12 +59,22 @@ void FillFindDataName(WIN32_FIND_DATA& findData, const LLDirEntry& dirEntry, con
 }
 
 // ---------------------------------------------------------------------------
+int CompareDataNameInc(const LLDirEntry* pDirLeft, const LLDirEntry* pDirRight);
+
+// ---------------------------------------------------------------------------
 int CompareDataExtInc(const LLDirEntry* pDirLeft, const LLDirEntry* pDirRight)
 {
     const char* pLeftExt = strrchr(pDirLeft->filenameLStr, '.');
     const char* pRightExt = strrchr(pDirRight->filenameLStr, '.');
     if (pLeftExt == 0 || pRightExt == 0)
-        return (int)((size_t)pLeftExt & 0x8fff) - (int)((size_t)pRightExt & 0x8fff);
+    {
+        // Extensionless files sort before files with an extension; compare by
+        // name when both lack one. Must not depend on pointer addresses - this
+        // feeds an insertion sort that requires a consistent strict-weak-order.
+        if (pLeftExt == pRightExt)
+            return CompareDataNameInc(pDirLeft, pDirRight);
+        return (pLeftExt == 0) ? -1 : 1;
+    }
     int diffExt = _stricmp(pLeftExt, pRightExt);
     return diffExt ? diffExt : _stricmp(pDirLeft->filenameLStr, pDirRight->filenameLStr);
 }
@@ -182,11 +192,16 @@ void FillFindDataCtime(WIN32_FIND_DATA& findData, const LLDirEntry& dirEntry, co
 // ---------------------------------------------------------------------------
 void FillEntryMtime(LLDirEntry& dirEntry, const WIN32_FIND_DATA& findData, const LLDirSort& dirSort)
 {
-    // Sort on value[0], set to writeTime
-    dirEntry.lvalue[0].ft = findData.ftLastWriteTime;
+    assert(dirSort.m_values == 0 || dirSort.m_values == 1 || dirSort.m_values == 4);
+
+    // Sort on value[0], set to writeTime - only if a slot was actually allocated.
+    // Name/ext/path/type sorts without needAllData use m_values==0 (they don't sort
+    // on this value), so the entry's lvalue[] has zero elements in the pool - writing
+    // lvalue[0] there would write past the allocation into the next pooled entry.
+    if (dirSort.m_values != 0)
+        dirEntry.lvalue[0].ft = findData.ftLastWriteTime;
 
     // Also copy non-sort fields
-    assert(dirSort.m_values == 0 || dirSort.m_values == 4);
     if (dirSort.m_values == 4)
     {
         dirEntry.lvalue[1].ft = findData.ftCreationTime;
@@ -199,9 +214,11 @@ void FillEntryMtime(LLDirEntry& dirEntry, const WIN32_FIND_DATA& findData, const
 // ---------------------------------------------------------------------------
 void FillFindDataMtime(WIN32_FIND_DATA& findData, const LLDirEntry& dirEntry, const LLDirSort& dirSort)
 {
-    findData.ftLastWriteTime = dirEntry.lvalue[0].ft;
+    assert(dirSort.m_values == 0 || dirSort.m_values == 1 || dirSort.m_values == 4);
 
-    assert(dirSort.m_values == 0 || dirSort.m_values == 4);
+    if (dirSort.m_values != 0)
+        findData.ftLastWriteTime = dirEntry.lvalue[0].ft;
+
     if (dirSort.m_values == 4)
     {
         findData.ftCreationTime   = dirEntry.lvalue[1].ft;

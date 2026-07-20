@@ -1466,20 +1466,15 @@ std::ofstream& LLReplace::OpenOutput(
 {
     int outMode = std::ios::out | std::ios::binary;
 
-    //  U(i|b)  Update inplace or make backup.
-    if (m_grepOpt.update == 'i')
-    {
-        m_tmpOutFilename = m_srcPath;
-        out.open(m_srcPath, outMode, _SH_DENYNO);
-        out.seekp(inPos);
-    }
-    else
-    {
-        m_tmpOutFilename = m_srcPath + "_tmp_XXXXXX";
-        m_tmpOutFilename.push_back('\0');
-        _mktemp_s((char*)m_tmpOutFilename.c_str(), m_tmpOutFilename.length());
-        out.open(m_tmpOutFilename, outMode, _SH_DENYNO);
-    }
+    //  U(i|b)  Update inplace or make backup.  Always write to a temp file, even
+    //  for in-place ('i') mode - opening m_srcPath directly for output here would
+    //  truncate it while `in` (or the memory-mapped view) still has it open for
+    //  reading, corrupting/losing everything not yet read.  BackupAndRenameFile()
+    //  moves the temp file over m_srcPath once reading is done.
+    m_tmpOutFilename = m_srcPath + "_tmp_XXXXXX";
+    m_tmpOutFilename.push_back('\0');
+    _mktemp_s((char*)m_tmpOutFilename.c_str(), m_tmpOutFilename.length());
+    out.open(m_tmpOutFilename, outMode, _SH_DENYNO);
 
     streamoff inOff = inPos;
     if (out && in && inOff > 0)

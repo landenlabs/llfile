@@ -598,6 +598,19 @@ static bool GetFileSizeLL(Handle& hnd, LONGLONG& fileSizeLL)
 }
 
 // ---------------------------------------------------------------------------
+// Byte-for-byte comparison of two files.
+// Opens both files (retrying on ERROR_NOT_ENOUGH_SERVER_MEMORY), compares
+// their sizes, then streams them through fixed-size buffers comparing
+// contents:
+//   - non-verbose: memcmp() each buffer pair and stop at the first
+//     differing byte (fills compareInfo.differAt/diffCnt only).
+//   - verbose: scans every byte, recording every difference and
+//     bucketing each differing offset into compareInfo.whereCnt (~100
+//     buckets spanning the file) so callers can report where diffs
+//     cluster; also prints up to quitAfter differences to wout.
+// m_offset seeks both files forward before comparing (used to skip a
+// common header). m_onlySizeOp/m_onlySize can turn identical-size files
+// into eCmpSkip instead of comparing content.
 // return:  -2 skip, -1 error, 0 identical, 1 differ
 LLCmp::CompareResult LLCmp::CompareDataBinary(
         const char* filePath1,
@@ -676,6 +689,8 @@ LLCmp::CompareResult LLCmp::CompareDataBinary(
     if (result == eCmpEqual)
     {
         DWORD whereSize = DWORD(compareInfo.fileSize2 / 100);
+        if (whereSize == 0)
+            whereSize = 1;      // avoid divide-by-zero for files < 100 bytes
         memset(compareInfo.whereCnt, 0, sizeof(compareInfo.whereCnt));
 
         const uint sBufSize = 4096*16;
@@ -708,7 +723,10 @@ LLCmp::CompareResult LLCmp::CompareDataBinary(
                     {
                         compareInfo.differAt = filePos + idx;
                         compareInfo.diffCnt++;
-                        compareInfo.whereCnt[compareInfo.differAt/whereSize]++;
+                        DWORD whIdx = DWORD(compareInfo.differAt/whereSize);
+                        if (whIdx >= ARRAYSIZE(compareInfo.whereCnt))
+                            whIdx = ARRAYSIZE(compareInfo.whereCnt) - 1;   // fileSize2 not a multiple of 100 - clamp bucket
+                        compareInfo.whereCnt[whIdx]++;
 
                         if (quitAfter != 0)
                         {
@@ -983,11 +1001,11 @@ int LLCmp::CompareFileData(DirEntryList& dirEntryList)
                     // LLMsg::Out() << "!=, " << filePath1 << ", " << filePath2
 					PrintPath("!=, ", dirEntryList[0], dirEntryList[fileIdx])
                         << ", Differ At: " << compareInfo.differAt
-                        << " (" << compareInfo.differAt*100/compareInfo.fileSize1
+                        << " (" << (compareInfo.fileSize1 != 0 ? compareInfo.differAt*100/compareInfo.fileSize1 : 0)
                         << "%)";
                     if (m_verbose)
                         LLMsg::Out() << " DiffCnt: " << compareInfo.diffCnt
-                            << " (" << compareInfo.diffCnt*100/compareInfo.fileSize1
+                            << " (" << (compareInfo.fileSize1 != 0 ? compareInfo.diffCnt*100/compareInfo.fileSize1 : 0)
                             << "%)";
                     LLMsg::Out() << std::endl;
                     LLMsg::Out() << cmpResults.str();
@@ -995,6 +1013,8 @@ int LLCmp::CompareFileData(DirEntryList& dirEntryList)
                     {
                         LLMsg::Out() << " Where:";
                         DWORD whereSize = DWORD(compareInfo.fileSize2 / 100);
+                        if (whereSize == 0)
+                            whereSize = 1;      // avoid divide-by-zero for files < 100 bytes
                         for (unsigned whIdx = 0; whIdx != 100; whIdx++)
                         {
                             if (compareInfo.whereCnt[whIdx] == 0)
@@ -1463,6 +1483,7 @@ void  LLCmp::DoCmp(CmpMatch cmpMatch)
         while (pDirEntry)
         {
             cmpList.clear();
+            const LLDirEntry* pGroupFirst = pDirEntry;   // group anchor, kept even if filtered out below
 
             do
             {
@@ -1475,7 +1496,10 @@ void  LLCmp::DoCmp(CmpMatch cmpMatch)
                 }
                 pDirEntry = pDirEntry->pNext;
                 fileIdx++;
-            } while (pDirEntry && cmpMatch(pDirEntry, cmpList[0], m_levels));
+            } while (pDirEntry && cmpMatch(pDirEntry, pGroupFirst, m_levels));
+
+            if (cmpList.empty())
+                continue;   // entire group filtered out - nothing to compare
 
             if (m_progress)
             {

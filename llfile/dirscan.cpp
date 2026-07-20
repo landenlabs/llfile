@@ -238,7 +238,7 @@ bool PatternMatch(const std::string& pattern, const char* str)
 DirectoryScan::DirectoryScan() :
     m_fileFilter(),
     m_recurse(false),
-    m_skipJunction(false),
+    m_skipJunction(true),
     m_addAllDepths(false),
     m_abort(false),
     m_disableWow64Redirection(true),
@@ -302,6 +302,15 @@ size_t DirectoryScan::GetFilesInDirectory(int depth)
 //
 size_t DirectoryScan::GetFilesInDirectory2(int depth)
 {
+    // Backstop against a symlink/junction cycle recursing until the stack overflows -
+    // real directory trees never nest anywhere near this deep, cycles do.
+    static const int sMaxRecurseDepth = 100;
+    if (depth > sMaxRecurseDepth)
+    {
+        LLMsg::PresentError(0, "Recursion depth limit exceeded (possible symlink/junction cycle), ", m_dir);
+        return 0;
+    }
+
     WIN32_FIND_DATA FileData;    // Data structure describes the file found
     HANDLE  hSearch;             // Search handle returned by FindFirstFile
     bool    is_more = true;

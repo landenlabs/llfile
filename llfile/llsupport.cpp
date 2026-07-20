@@ -161,6 +161,9 @@ bool ReplaceDstStarWithSrc(
     PatInfo patInfo;
     patInfo.rawLen = patInfo.rawOff = patInfo.wildOff = 0;
 
+    if (pPattern == NULL)
+        pPattern = "";
+
     for (int sepIdx = 0; separators[sepIdx] != '\0'; sepIdx++)
     {
          const char* pSlash = strrchr(pPattern, separators[sepIdx]);
@@ -329,6 +332,7 @@ bool ReplaceDstWithSrc(
 						remLen++;
 						digits++;
 					}
+					digits = min(digits, (unsigned)(sizeof(numBuf) - 1));
 					sprintf(numBuf, "%0*u", digits, sNum++);
 					ReplaceString(dstFile, dstIdx, remLen, numBuf, digits);
 					break;
@@ -2064,12 +2068,16 @@ DWORD RunCommands::GetExitCode(PROCESS_INFORMATION* pProcess, bool wait)
     {
         // Wait until child process exits.
         WaitForSingleObject(pProcess->hProcess, INFINITE);
-        Close(pProcess);
     }
 
+    // Must read the exit code before Close() invalidates/frees pProcess.
     DWORD exitCode = 0;
     if ( !GetExitCodeProcess(pProcess->hProcess, &exitCode))
         exitCode = (DWORD)-1;
+
+    if (wait)
+        Close(pProcess);
+
     return exitCode;
 }
 
@@ -2084,7 +2092,8 @@ void RunCommands::Close(PROCESS_INFORMATION* pProcess)
 
     ProcessList::iterator iter = std::find(m_processList.begin(), m_processList.end(), pProcess);
     if (iter != m_processList.end())
-        delete *iter;
+        m_processList.erase(iter);
+    delete pProcess;
 }
 
 // ---------------------------------------------------------------------------
@@ -2112,13 +2121,14 @@ bool RunCommands::AllDone() const
 // ---------------------------------------------------------------------------
 void RunCommands::Clear()
 {
-    for (ProcessList::iterator iter = m_processList.begin();
-        iter != m_processList.end();
-        iter++)
+    // Close() now erases pProcess's node from m_processList itself, so advance
+    // to the next node before calling it to avoid using the just-erased iterator.
+    for (ProcessList::iterator iter = m_processList.begin(); iter != m_processList.end(); )
     {
-        Abort(*iter);
-        Close(*iter);
-        iter = m_processList.erase(iter);
+        PROCESS_INFORMATION* pProcess = *iter;
+        ++iter;
+        Abort(pProcess);
+        Close(pProcess);
     }
 }
 

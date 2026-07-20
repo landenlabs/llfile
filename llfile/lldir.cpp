@@ -1458,9 +1458,9 @@ void LLDir::WatchDir(int argc, const char* pDirs[])
 
     for (int argIdx = 0; argIdx < argc; argIdx++)
     {
-        pDirInfo->pLLDir = this;
-        pDirInfo->dir = pDirs[argIdx];
-        pThread[argIdx] = CreateThread(NULL, 0, MonitorDirThread, (PVOID)pDirInfo, 0, &pThreadId[argIdx]);
+        pDirInfo[argIdx].pLLDir = this;
+        pDirInfo[argIdx].dir = pDirs[argIdx];
+        pThread[argIdx] = CreateThread(NULL, 0, MonitorDirThread, (PVOID)&pDirInfo[argIdx], 0, &pThreadId[argIdx]);
     }
 
     // Sleep(...)
@@ -1468,6 +1468,12 @@ void LLDir::WatchDir(int argc, const char* pDirs[])
     DWORD status = WaitForMultipleObjects(argc, pThread, true, INFINITE);
     if ( !m_quiet)
         LLMsg::Out() << "erron=" << errno << " LastError=" << GetLastError() << " status=" << status << std::endl;
+
+    for (int argIdx = 0; argIdx < argc; argIdx++)
+        CloseHandle(pThread[argIdx]);
+    delete[] pThread;
+    delete[] pThreadId;
+    delete[] pDirInfo;
 }
 
 // ---------------------------------------------------------------------------

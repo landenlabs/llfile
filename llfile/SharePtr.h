@@ -55,7 +55,16 @@ public:
     {
         if (this != &rhs)
         {
+            ShareItem* pOld = m_pShareItem;
             m_pShareItem = rhs.m_pShareItem != NULL ? rhs.m_pShareItem->Add() : NULL;
+
+            if (pOld != NULL)
+            {
+                int refCnt = pOld->Dec();
+                assert(refCnt >= 0);
+                if (0 == refCnt)
+                    delete pOld;
+            }
         }
         return *this;
     }

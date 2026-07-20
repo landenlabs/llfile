@@ -132,7 +132,7 @@ static const char sHelp[] =
 "    ; List environment variable path, split on semicolon\n"
 "      -e=PATH   \"-p=%s\\n\"   \n"
 "      -e=PATH   \"-p=%4# %s\\n\"         ; Number env path directories\n"
-"      -P=Program -e=* -p%s\\n          ; Show env's which contain word Program \n"
+"      -P=Program -e=* -p=%s\\n          ; Show env's which contain word Program \n"
 "      -e=PATH   \"-p=%s\" *.txt         ; Scan paths for *.txt \n"
 "      \"-l=Date is %m/%d/%y %H:%M:%S\"                  ; local time\n"
 "      \"-l=Date is %m/%d/%y\" \"-p=\\n\" \"-l=%H:%M:%S\"     ; local time\n"
@@ -1051,22 +1051,20 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
 
         case 'e':   // -e=<envName> or -e=* or -e
             cmdOpts = LLSup::ParseString(cmdOpts+1, str, NULL);
-            if (str.empty() || str[0] == '*')
-            {
+            if (str.empty() || str[0] == '*')  {
                 const char* pEnvList = GetEnvironmentStrings();
                 if (pEnvList)
                 while (*pEnvList)
                 {
                     std::string envItem = pEnvList;
-                    if (Count(envItem, '=') == 1 && !LLSup::PatternListMatches(m_grepSrcPathPat, envItem, true))
+                    if (Count(envItem, '=') == 1 && LLSup::PatternListMatches(m_grepSrcPathPat, envItem, true))
                         inList.push(envItem);
                     pEnvList += envItem.length() + 1;
                 }
-            }
-            else
-            {
+            } else {
                 m_env += LLSup::GetEnvStr(str.c_str(), "");
             }
+
             VerboseMsg() << "-E=" << str << std::endl;
             break;
 
@@ -1153,12 +1151,11 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
 
                 VerboseMsg() << "printFmt=" << m_printFmt << std::endl;
                 
-                if (inList.empty()) 
+                if (inList.empty())
                 {
-                    // Why are we calling print with no data ?  is it for a header ?
-                    // Because you can use it to prent a message, like p -p="hello world\n" 
+                    // No piped input - treat -p= as a literal message to print, eg p -p='hello world'
                     PrintFormatted(m_printFmt, inList, ++nLine);
-                } 
+                }
                 else 
                 {
                     if (strchr(m_printFmt, '%') != NULL)
@@ -1262,6 +1259,7 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
 
     if (m_printFmt.empty() && inList.size() == 0 && argc == 1) 
     {
+        //  p "hello world"   -> hello world
         m_printFmt = pDirs[0];
         PrintFormatted(m_printFmt, inList, ++nLine);
     } 
@@ -1273,7 +1271,7 @@ int LLPrintf::Run(const char* cmdOpts, int argc, const char* pDirs[])
             std::string listItem = inList.front();
             inList.pop();
             
-            if (!LLSup::PatternListMatches(m_grepSrcPathPat, listItem, true))
+            if (LLSup::PatternListMatches(m_grepSrcPathPat, listItem, true))
             {
                 matchResults.push(listItem);
                 SlitOnSeparators(matchResults, m_separators);

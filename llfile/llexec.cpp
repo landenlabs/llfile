@@ -237,9 +237,11 @@ int LLExec::Run(const char* cmdOpts, int argc, const char* pDirs[])
 		char currentDir[LL_MAX_PATH];
 		GetCurrentDirectory(ARRAYSIZE(currentDir), currentDir);
 		WIN32_FIND_DATA data;
+		ClearMemory(&data, sizeof(data));
 		strcpy(data.cAlternateFileName, "none");
 		data.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 
+		m_pPattern = (argc > 0) ? pDirs[0] : "";   // else left NULL, crashes '*' substitution in ReplaceDstStarWithSrc()
 		ProcessEntry(currentDir, &data, 1);
 	}
 	else
